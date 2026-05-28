@@ -5,7 +5,9 @@ import http from 'http';
 import authRoutes from './routes/auth';
 import callsRoutes from './routes/calls';
 import ambulancesRoutes from './routes/ambulances';
+import analyticsRoutes from './routes/analytics';
 import { initSocket } from './socket';
+import { pool } from './db/pool';
 
 dotenv.config();
 
@@ -20,6 +22,21 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/calls', callsRoutes);
 app.use('/api/ambulances', ambulancesRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
+app.get('/health', async (req, res) => {
+  let db_connected = false;
+  try {
+    await pool.query('SELECT 1');
+    db_connected = true;
+  } catch (e) {
+    db_connected = false;
+  }
+  res.json({
+    uptime: process.uptime(),
+    db_connected
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 

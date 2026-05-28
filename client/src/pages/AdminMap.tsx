@@ -30,6 +30,7 @@ export default function AdminMap() {
   const [calls, setCalls] = useState<IncidentCall[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [heatmapMode, setHeatmapMode] = useState(false);
+  const [prepositionMode, setPrepositionMode] = useState(false);
   
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -39,6 +40,7 @@ export default function AdminMap() {
   const ambulanceMarkersRef = useRef<Record<string, any>>({});
   const callMarkersRef = useRef<Record<string, any>>({});
   const heatmapLayerRef = useRef<any>(null);
+  const prepositionOverlaysRef = useRef<any[]>([]);
 
   useEffect(() => {
     fetchInitialData();
@@ -244,6 +246,38 @@ export default function AdminMap() {
     }
   };
 
+  const togglePreposition = async () => {
+    const newVal = !prepositionMode;
+    setPrepositionMode(newVal);
+
+    if (newVal) {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await axios.get(`${apiUrl}/api/analytics/preposition-zones`);
+        
+        prepositionOverlaysRef.current = res.data.map((zone: any) => {
+          return mapplsClassRef.current.Circle({
+            map: mapInstanceRef.current,
+            center: { lat: zone.lat, lng: zone.lng },
+            radius: 5000,
+            fillColor: '#3b82f6',
+            fillOpacity: 0.4,
+            strokeColor: '#2563eb',
+            strokeOpacity: 0.8,
+            strokeWeight: 2
+          });
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      prepositionOverlaysRef.current.forEach(overlay => {
+        try { overlay.remove(); } catch(e) {}
+      });
+      prepositionOverlaysRef.current = [];
+    }
+  };
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       <div id="admin-map" ref={mapRef} className="absolute inset-0 z-0"></div>
@@ -286,11 +320,19 @@ export default function AdminMap() {
             
             <button
               onClick={toggleHeatmap}
-              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+              className={`w-full py-2 px-4 mb-2 rounded-lg font-medium transition-colors ${
                 heatmapMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
               {heatmapMode ? 'Exit Heatmap Mode' : 'Show Incident Heatmap'}
+            </button>
+            <button
+              onClick={togglePreposition}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                prepositionMode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
+            >
+              {prepositionMode ? 'Hide Pre-position Zones' : 'Show Pre-position Zones'}
             </button>
           </div>
         )}

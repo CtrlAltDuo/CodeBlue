@@ -6,6 +6,9 @@ import HospitalDashboard from './pages/HospitalDashboard';
 import DriverApp from './pages/DriverApp';
 import CitizenApp from './pages/CitizenApp';
 import AdminMap from './pages/AdminMap';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import { ToastProvider } from './contexts/ToastContext';
+import Layout from './components/Layout';
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode, role?: string }) {
   const { user, token } = useAuth();
@@ -24,33 +27,43 @@ function ProtectedRoute({ children, role }: { children: React.ReactNode, role?: 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/citizen" element={<CitizenApp />} />
-          
-          <Route path="/admin-map" element={
-            <ProtectedRoute role="admin">
-              <AdminMap />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/hospital" element={
-            <ProtectedRoute role="hospital_staff">
-              <HospitalDashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/driver" element={
-            <ProtectedRoute role="driver">
-              <DriverApp />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/citizen" element={<CitizenApp />} />
+              
+              <Route path="/admin-map" element={
+                <ProtectedRoute role="admin">
+                  <AdminMap />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/analytics" element={
+                <ProtectedRoute role="admin">
+                  <AnalyticsDashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/hospital" element={
+                <ProtectedRoute role="hospital_staff">
+                  <HospitalDashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/driver" element={
+                <ProtectedRoute role="driver">
+                  <DriverApp />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }

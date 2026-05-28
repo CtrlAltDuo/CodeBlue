@@ -20,21 +20,38 @@ Real-time ambulance dispatch and emergency response optimization platform with l
    npm install
    ```
 
-3. **Environment variables**:
-   Copy the example environment files and fill in your keys:
-   ```bash
-   cp client/.env.example client/.env
-   cp server/.env.example server/.env
+3. **Database Setup**:
+   Ensure you have a PostgreSQL instance running. Execute the schema script located at `server/src/db/schema.sql` to initialize your database tables.
+
+4. **Environment variables**:
+   Create `.env` files in both `client` and `server` folders using the examples provided.
+
+   **`client/.env`**:
+   ```env
+   VITE_MAPPLS_API_KEY=your_mappls_key_here
+   VITE_API_URL=http://localhost:5000
    ```
 
-4. **Run development servers**:
+   **`server/.env`**:
+   ```env
+   DATABASE_URL=postgres://user:password@localhost:5432/codeblue
+   JWT_SECRET=your_jwt_secret
+   MAPPLS_API_KEY=your_mappls_key_here
+   PORT=5000
+   CLIENT_URL=http://localhost:5173
+   ```
+
+5. **Run development servers**:
    ```bash
    npm run dev
    ```
 
-## User Roles
+## User Roles & Navigation
 
-- **Admin**: System oversight and management.
-- **Hospital Staff**: Manage hospital ambulances and view dispatch status.
-- **Driver**: Ambulance driver interface for accepting calls and navigating.
-- **Citizen**: Request emergency services and track ambulance ETA.
+- **Citizen**: Accessible at `/citizen`. Request emergency services, track ambulance ETA, and view live location via Mappls SDK. No login required.
+- **Admin**: Accessible at `/admin-map` (Dispatch map with hotspot toggle) and `/analytics` (Performance charts, 30-day volume, utilization metrics).
+- **Hospital Staff**: Accessible at `/hospital`. Manage hospital ambulances and view dispatch status.
+- **Driver**: Accessible at `/driver`. Interface for accepting calls and navigating.
+
+## API Health Check
+You can verify the backend is running and connected to the database by visiting: `GET http://localhost:5000/health`
