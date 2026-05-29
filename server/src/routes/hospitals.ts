@@ -57,7 +57,7 @@ router.get('/nearby', async (req: Request, res: Response): Promise<void> => {
         // Basic ETA: 1.5 mins per km
         eta = Math.max(1, Math.round(minDistance * 1.5));
       }
-      return { ...h, eta };
+      return { ...h, eta, available_ambulances: hospAmbulances.length };
     });
 
     res.json(hospitalsWithETA);

@@ -293,6 +293,47 @@ export default function CitizenApp() {
                 {loading ? 'Requesting Ambulance...' : 'GET HELP NOW'}
               </button>
             </form>
+            
+            {nearbyHospitals.length > 0 && (
+              <div className="mt-8 space-y-4">
+                <h3 className="font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider text-sm transition-colors">Nearby Emergency Centers</h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                  {nearbyHospitals.map(h => (
+                    <div key={h.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white transition-colors">{h.name}</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 transition-colors">{h.address}</p>
+                        </div>
+                        {h.eta ? (
+                          <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors">
+                            ETA: {h.eta} min
+                          </div>
+                        ) : (
+                          <div className="bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 px-2 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors">
+                            Unavailable
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 transition-colors">
+                        <div className="text-center flex-1">
+                          <div className="text-[10px] uppercase font-bold text-slate-400 transition-colors">Available Beds</div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200 transition-colors">{h.available_beds}</div>
+                        </div>
+                        <div className="text-center flex-1">
+                          <div className="text-[10px] uppercase font-bold text-slate-400 transition-colors">Available ICUs</div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200 transition-colors">{h.available_icus}</div>
+                        </div>
+                        <div className="text-center flex-1">
+                          <div className="text-[10px] uppercase font-bold text-slate-400 transition-colors">Ambulances</div>
+                          <div className="font-bold text-blue-600 dark:text-blue-400 transition-colors">{h.available_ambulances || 0}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           ) : (
             <div className="space-y-6 animate-fade-in flex flex-col h-full justify-center">
               <div className="bg-white dark:bg-slate-800 border border-green-200 dark:border-green-900/50 rounded-3xl p-8 shadow-xl text-center relative overflow-hidden transition-colors">
@@ -355,6 +396,10 @@ export default function CitizenApp() {
                         <div className="bg-slate-100 p-1.5 rounded">
                           <div className="text-[10px] uppercase font-bold text-slate-500">ICUs</div>
                           <div className="font-bold text-slate-800">{h.available_icus}</div>
+                        </div>
+                        <div className="bg-slate-100 p-1.5 rounded col-span-2">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Available Ambulances</div>
+                          <div className="font-bold text-blue-600">{h.available_ambulances || 0}</div>
                         </div>
                       </div>
                       {h.eta ? (
