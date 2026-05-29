@@ -219,10 +219,10 @@ export default function CitizenApp() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row overflow-hidden transition-colors duration-300">
       
       {/* LEFT PANEL - Form & Status */}
-      <div className="w-full md:w-[450px] lg:w-[500px] flex-shrink-0 bg-white shadow-2xl z-10 flex flex-col h-screen overflow-y-auto">
+      <div className="w-full md:w-[450px] lg:w-[500px] flex-shrink-0 bg-white dark:bg-slate-900 shadow-2xl z-10 flex flex-col h-screen overflow-y-auto transition-colors border-r border-transparent dark:border-slate-800">
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-8 text-white shadow-inner flex flex-col justify-center items-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-4 backdrop-blur-sm">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,27 +243,27 @@ export default function CitizenApp() {
               )}
               
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-gray-700">Phone Number</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors">Phone Number</label>
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white outline-none transition-all duration-200"
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white outline-none transition-all duration-200"
                   placeholder="Enter your phone number"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-semibold text-gray-700">Pickup Location</label>
-                <p className="text-xs text-gray-500 mb-2">Drag the marker on the map to pin your exact location, or use GPS.</p>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors">Pickup Location</label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 transition-colors">Drag the marker on the map to pin your exact location, or use GPS.</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     required
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white outline-none transition-all duration-200"
+                    className="w-full px-5 py-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white outline-none transition-all duration-200"
                     placeholder="Enter pickup address"
                   />
                   <button
@@ -295,25 +295,25 @@ export default function CitizenApp() {
             </form>
           ) : (
             <div className="space-y-6 animate-fade-in flex flex-col h-full justify-center">
-              <div className="bg-white border border-green-200 rounded-3xl p-8 shadow-xl text-center relative overflow-hidden">
+              <div className="bg-white dark:bg-slate-800 border border-green-200 dark:border-green-900/50 rounded-3xl p-8 shadow-xl text-center relative overflow-hidden transition-colors">
                 <div className="absolute top-0 left-0 w-full h-2 bg-green-500 animate-pulse"></div>
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6 shadow-inner">
-                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6 shadow-inner transition-colors">
+                  <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="font-extrabold text-gray-900 text-3xl mb-2">{status}</h3>
-                <p className="text-gray-500 font-medium mb-6 text-lg tracking-wide">{ambulancePlate}</p>
+                <h3 className="font-extrabold text-gray-900 dark:text-white text-3xl mb-2 transition-colors">{status}</h3>
+                <p className="text-gray-500 dark:text-gray-400 font-medium mb-6 text-lg tracking-wide transition-colors">{ambulancePlate}</p>
                 {eta !== null && (
-                  <div className="inline-block bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl font-bold text-2xl shadow-sm">
+                  <div className="inline-block bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400 px-6 py-4 rounded-xl font-bold text-2xl shadow-sm transition-colors">
                     ETA: {eta} minutes
                   </div>
                 )}
               </div>
               
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h4 className="font-bold text-slate-800 mb-2">Instructions</h4>
-                <ul className="text-slate-600 text-sm space-y-2 list-disc list-inside">
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 transition-colors">
+                <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-2 transition-colors">Instructions</h4>
+                <ul className="text-slate-600 dark:text-slate-400 text-sm space-y-2 list-disc list-inside transition-colors">
                   <li>Stay calm and keep your phone line open.</li>
                   <li>Gather any relevant medical history or medications.</li>
                   <li>Unlock doors and ensure a clear pathway for paramedics.</li>
@@ -382,8 +382,8 @@ export default function CitizenApp() {
 
         {/* Floating map hint */}
         {!callId && (
-          <div className="absolute top-6 right-6 z-[1000] bg-white/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg border border-gray-200 pointer-events-none">
-            <span className="font-medium text-gray-700">📍 Click anywhere on the map to drop a pin</span>
+          <div className="absolute top-6 right-6 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg border border-gray-200 dark:border-slate-800 pointer-events-none transition-colors">
+            <span className="font-medium text-gray-700 dark:text-gray-300">📍 Click anywhere on the map to drop a pin</span>
           </div>
         )}
       </div>

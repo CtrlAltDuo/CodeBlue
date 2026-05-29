@@ -2,13 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { io } from 'socket.io-client';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const { toasts, removeToast } = useToast();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [connected, setConnected] = useState(true);
+
+  const cycleTheme = () => {
+    if (theme === 'light') setTheme('dark');
+    else if (theme === 'dark') setTheme('system');
+    else setTheme('light');
+  };
 
   // We want to hide the navbar completely on login/register/citizen, 
   // or show a very minimal one. For now, if not logged in, we only show
@@ -66,6 +74,11 @@ export default function Layout() {
               </div>
 
               <div className="flex items-center space-x-4">
+                <button onClick={cycleTheme} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="Toggle Theme">
+                  {theme === 'light' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+                  {theme === 'dark' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>}
+                  {theme === 'system' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
+                </button>
                 <div className="hidden md:flex flex-col items-end mr-4">
                   <span className="text-sm font-bold text-white">{user?.name}</span>
                   <span className="text-xs text-slate-400 capitalize">{user?.role.replace('_', ' ')}</span>
@@ -84,7 +97,7 @@ export default function Layout() {
 
       {isPublicRoute && (
         <div className="absolute top-0 left-0 w-full p-6 z-50 flex justify-between items-center pointer-events-none">
-          <Link to="/" className="font-extrabold text-2xl tracking-tight text-slate-900 pointer-events-auto flex items-center gap-2 drop-shadow-sm">
+          <Link to="/" className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white pointer-events-auto flex items-center gap-2 drop-shadow-sm transition-colors">
             <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.5)]">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -92,9 +105,16 @@ export default function Layout() {
             </div>
             CodeBlue
           </Link>
-          <Link to="/login" className="pointer-events-auto bg-white/50 backdrop-blur-md hover:bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 transition-all shadow-sm">
-            Staff Login
-          </Link>
+          <div className="flex items-center gap-4 pointer-events-auto">
+            <button onClick={cycleTheme} className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-sm" title="Toggle Theme">
+              {theme === 'light' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+              {theme === 'dark' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>}
+              {theme === 'system' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
+            </button>
+            <Link to="/login" className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 transition-all shadow-sm">
+              Staff Login
+            </Link>
+          </div>
         </div>
       )}
 

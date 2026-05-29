@@ -87,9 +87,9 @@ export default function HospitalOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-slate-900 px-8 py-8 text-white text-center border-b border-slate-800">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="max-w-4xl mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
+        <div className="bg-slate-900 dark:bg-slate-950 px-8 py-8 text-white text-center border-b border-slate-800 transition-colors">
           <h2 className="text-3xl font-extrabold tracking-tight">Hospital Partner Onboarding</h2>
           <p className="mt-2 text-slate-400 font-medium">Join our emergency response network</p>
         </div>
@@ -99,48 +99,48 @@ export default function HospitalOnboarding() {
 
           {step === 1 && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold border-b pb-2">Admin Credentials</h3>
+              <h3 className="text-xl font-semibold border-b border-slate-200 dark:border-slate-700 pb-2 text-slate-900 dark:text-white transition-colors">Admin Credentials</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Admin Name</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={adminName} onChange={e => setAdminName(e.target.value)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Admin Name</label>
+                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={adminName} onChange={e => setAdminName(e.target.value)} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Admin Email</label>
-                  <input type="email" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Admin Email</label>
+                  <input type="email" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} required />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Admin Password</label>
-                  <input type="password" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Admin Password</label>
+                  <input type="password" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} required />
                 </div>
               </div>
 
-              <h3 className="text-xl font-semibold border-b pb-2 mt-8">Hospital Information</h3>
+              <h3 className="text-xl font-semibold border-b border-slate-200 dark:border-slate-700 pb-2 mt-8 text-slate-900 dark:text-white transition-colors">Hospital Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Hospital Name</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={hospitalName} onChange={e => setHospitalName(e.target.value)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Hospital Name</label>
+                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={hospitalName} onChange={e => setHospitalName(e.target.value)} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Contact Phone</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={hospitalPhone} onChange={e => setHospitalPhone(e.target.value)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Contact Phone</label>
+                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={hospitalPhone} onChange={e => setHospitalPhone(e.target.value)} required />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Address</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={hospitalAddress} onChange={e => setHospitalAddress(e.target.value)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Address</label>
+                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={hospitalAddress} onChange={e => setHospitalAddress(e.target.value)} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Total Beds</label>
-                  <input type="number" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={totalBeds} onChange={e => setTotalBeds(parseInt(e.target.value) || 0)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Total Beds</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={totalBeds} onChange={e => setTotalBeds(parseInt(e.target.value) || 0)} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Total ICUs</label>
-                  <input type="number" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={totalICUs} onChange={e => setTotalICUs(parseInt(e.target.value) || 0)} required />
+                  <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Total ICUs</label>
+                  <input type="number" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={totalICUs} onChange={e => setTotalICUs(parseInt(e.target.value) || 0)} required />
                 </div>
               </div>
 
               <div className="mt-6">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Hospital Location (Click to pin)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 transition-colors">Hospital Location (Click to pin)</label>
                 <div className="h-64 rounded-xl overflow-hidden border border-slate-300 shadow-sm relative z-0">
                   <MapContainer center={[28.6139, 77.2090]} zoom={11} style={{ height: '100%', width: '100%' }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -155,48 +155,48 @@ export default function HospitalOnboarding() {
 
           {step === 2 && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center border-b pb-2">
-                <h3 className="text-xl font-semibold">Fleet & Drivers</h3>
-                <button onClick={addVehicle} className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-sm font-bold transition-colors border border-blue-200">+ Add Ambulance</button>
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 transition-colors">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white transition-colors">Fleet & Drivers</h3>
+                <button onClick={addVehicle} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg text-sm font-bold transition-colors border border-blue-200 dark:border-blue-800">+ Add Ambulance</button>
               </div>
 
               {fleet.map((vehicle, index) => (
-                <div key={index} className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative shadow-sm">
+                <div key={index} className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 relative shadow-sm transition-colors">
                   {fleet.length > 1 && (
                     <button onClick={() => removeVehicle(index)} className="absolute top-4 right-4 text-rose-500 hover:text-rose-700 font-extrabold text-lg p-2 transition-colors">X</button>
                   )}
-                  <h4 className="font-bold mb-4">Ambulance #{index + 1}</h4>
+                  <h4 className="font-bold mb-4 text-slate-900 dark:text-white transition-colors">Ambulance #{index + 1}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium mb-1">Number Plate</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={vehicle.numberPlate} onChange={e => updateFleet(index, 'numberPlate', e.target.value)} />
+                      <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Number Plate</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={vehicle.numberPlate} onChange={e => updateFleet(index, 'numberPlate', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Shift</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" placeholder="e.g. 9 AM - 5 PM" value={vehicle.shift} onChange={e => updateFleet(index, 'shift', e.target.value)} />
+                      <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Shift</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" placeholder="e.g. 9 AM - 5 PM" value={vehicle.shift} onChange={e => updateFleet(index, 'shift', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Driver Name</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={vehicle.driverName} onChange={e => updateFleet(index, 'driverName', e.target.value)} />
+                      <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Driver Name</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={vehicle.driverName} onChange={e => updateFleet(index, 'driverName', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Driver Email</label>
-                      <input type="email" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={vehicle.driverEmail} onChange={e => updateFleet(index, 'driverEmail', e.target.value)} />
+                      <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Driver Email</label>
+                      <input type="email" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={vehicle.driverEmail} onChange={e => updateFleet(index, 'driverEmail', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Driver ID Proof Number</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={vehicle.idProofNumber} onChange={e => updateFleet(index, 'idProofNumber', e.target.value)} />
+                      <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Driver ID Proof Number</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={vehicle.idProofNumber} onChange={e => updateFleet(index, 'idProofNumber', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Driver Default Password</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={vehicle.driverPassword} onChange={e => updateFleet(index, 'driverPassword', e.target.value)} />
+                      <label className="block text-xs font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">Driver Default Password</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors" value={vehicle.driverPassword} onChange={e => updateFleet(index, 'driverPassword', e.target.value)} />
                     </div>
                   </div>
                 </div>
               ))}
 
               <div className="flex gap-4 mt-8">
-                <button onClick={() => setStep(1)} className="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]">Back</button>
+                <button onClick={() => setStep(1)} className="w-1/3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]">Back</button>
                 <button onClick={handleSubmit} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-sm active:scale-[0.98]">
                   {loading ? 'Submitting...' : 'Complete Registration'}
                 </button>

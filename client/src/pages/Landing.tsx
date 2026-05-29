@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden transition-colors duration-300">
       {/* Dynamic Background Elements */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none opacity-40">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-red-600/30 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/30 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none opacity-40 dark:opacity-60">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-red-600/20 dark:bg-red-600/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 dark:bg-blue-600/30 rounded-full blur-[120px] animate-pulse delay-1000"></div>
       </div>
 
       {/* Main Content */}
@@ -17,11 +17,11 @@ export default function Landing() {
           </svg>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6">
-          <span className="text-red-500">Code</span>Blue
+        <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 transition-colors">
+          <span className="text-red-600 dark:text-red-500">Code</span>Blue
         </h1>
         
-        <p className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
+        <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-12 font-medium leading-relaxed transition-colors">
           Intelligent emergency response platform. Connecting citizens with the fastest available life-saving care.
         </p>
 
@@ -41,7 +41,7 @@ export default function Landing() {
           
           <Link 
             to="/login"
-            className="w-full sm:w-auto shrink-0 px-8 py-5 text-lg font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-2xl hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all active:scale-95 text-center"
+            className="w-full sm:w-auto shrink-0 px-8 py-5 text-lg font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 text-center shadow-sm"
           >
             Staff Portal
           </Link>

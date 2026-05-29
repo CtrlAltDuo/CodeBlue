@@ -10,6 +10,7 @@ import CitizenApp from './pages/CitizenApp';
 import AdminMap from './pages/AdminMap';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode, role?: string }) {
@@ -38,9 +39,10 @@ function RootRoute() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <BrowserRouter>
           <Routes>
             {/* Unauthenticated routes without standard Layout navigation */}
             <Route path="/" element={<RootRoute />} />
@@ -78,9 +80,10 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
-        </BrowserRouter>
-      </ToastProvider>
-    </AuthProvider>
+          </BrowserRouter>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

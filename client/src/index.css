@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import 'leaflet/dist/leaflet.css';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

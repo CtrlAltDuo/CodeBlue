@@ -139,7 +139,7 @@ export default function AdminMap() {
   const defaultCenter: [number, number] = [20.5937, 78.9629];
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-slate-900">
+    <div className="relative w-full h-screen overflow-hidden bg-slate-900 transition-colors duration-300">
       <MapContainer 
         center={defaultCenter} 
         zoom={5} 
@@ -212,61 +212,61 @@ export default function AdminMap() {
         )}
       </MapContainer>
 
-      <div className={`absolute top-4 left-4 z-10 bg-gray-900/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700 transition-all duration-300 ${sidebarOpen ? 'w-80' : 'w-16'} overflow-hidden`}>
-        <div className="p-5 text-white flex justify-between items-center cursor-pointer border-b border-gray-800" onClick={() => setSidebarOpen(!sidebarOpen)}>
+      <div className={`absolute top-4 left-4 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all duration-300 ${sidebarOpen ? 'w-80' : 'w-16'} overflow-hidden`}>
+        <div className="p-5 text-slate-900 dark:text-white flex justify-between items-center cursor-pointer border-b border-slate-200 dark:border-slate-800 transition-colors" onClick={() => setSidebarOpen(!sidebarOpen)}>
           <h2 className={`font-bold tracking-wide text-lg ${!sidebarOpen && 'hidden'}`}>Dispatch Center</h2>
-          <svg className="w-6 h-6 text-gray-400 hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          <svg className="w-6 h-6 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </div>
         
         {sidebarOpen && (
           <div className="p-5">
             <div className="mb-6">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Live Fleet Status</h3>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 transition-colors">Live Fleet Status</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
+                <div className="bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-center transition-colors">
                   <div className="text-3xl font-black text-blue-500 mb-1">{calls.length}</div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Active Calls</div>
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide transition-colors">Active Calls</div>
                 </div>
-                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
-                  <div className="text-3xl font-black text-green-500 mb-1">
+                <div className="bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-center transition-colors">
+                  <div className="text-3xl font-black text-emerald-500 mb-1">
                     {ambulances.filter(a => a.status === 'AVAILABLE').length}
                   </div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Available</div>
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide transition-colors">Available</div>
                 </div>
-                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
-                  <div className="text-3xl font-black text-yellow-500 mb-1">
+                <div className="bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-center transition-colors">
+                  <div className="text-3xl font-black text-amber-500 mb-1">
                     {ambulances.filter(a => a.status === 'EN_ROUTE').length}
                   </div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">En Route</div>
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide transition-colors">En Route</div>
                 </div>
-                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
-                  <div className="text-3xl font-black text-red-500 mb-1">
+                <div className="bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-center transition-colors">
+                  <div className="text-3xl font-black text-rose-500 mb-1">
                     {ambulances.filter(a => a.status === 'OCCUPIED').length}
                   </div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Occupied</div>
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide transition-colors">Occupied</div>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-3 pt-4 border-t border-gray-800">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Analytics Overlay</h3>
+            <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800 transition-colors">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 transition-colors">Analytics Overlay</h3>
               <button
                 onClick={toggleHeatmap}
                 className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                  heatmapMode ? 'bg-red-500/20 text-red-400 border border-red-500/50' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                  heatmapMode ? 'bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 dark:border-rose-500/50' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className={`w-2 h-2 rounded-full ${heatmapMode ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${heatmapMode ? 'bg-rose-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-500'}`}></div>
                 {heatmapMode ? 'Exit Heatmap Mode' : 'Show Incident Clusters'}
               </button>
               
               <button
                 onClick={togglePreposition}
                 className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                  prepositionMode ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                  prepositionMode ? 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 dark:border-blue-500/50' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className={`w-2 h-2 rounded-full ${prepositionMode ? 'bg-blue-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${prepositionMode ? 'bg-blue-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-500'}`}></div>
                 {prepositionMode ? 'Hide Predictive Zones' : 'Show Predictive Zones'}
               </button>
             </div>
