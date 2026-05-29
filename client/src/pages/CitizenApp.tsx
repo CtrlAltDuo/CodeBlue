@@ -235,7 +235,8 @@ export default function CitizenApp() {
         
         <div className="p-8 flex-grow">
           {!callId ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <>
+              <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
                 <div className="p-4 bg-red-50/80 backdrop-blur-md border-l-4 border-red-500 text-red-700 rounded-r-lg text-sm shadow-sm animate-fade-in">
                   {error}
@@ -334,6 +335,7 @@ export default function CitizenApp() {
                 </div>
               </div>
             )}
+            </>
           ) : (
             <div className="space-y-6 animate-fade-in flex flex-col h-full justify-center">
               <div className="bg-white dark:bg-slate-800 border border-green-200 dark:border-green-900/50 rounded-3xl p-8 shadow-xl text-center relative overflow-hidden transition-colors">
