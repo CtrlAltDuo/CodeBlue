@@ -103,14 +103,14 @@ export default function HospitalDashboard() {
             </div>
             <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm flex items-center gap-4">
               <div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avail. Beds</div>
-                <input type="number" className="w-20 text-center text-lg font-bold border-b" value={beds} onChange={e => setBeds(parseInt(e.target.value) || 0)} />
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Avail. Beds</div>
+                <input type="number" className="w-24 px-3 py-2 text-center text-lg font-bold rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={beds} onChange={e => setBeds(parseInt(e.target.value) || 0)} />
               </div>
               <div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avail. ICUs</div>
-                <input type="number" className="w-20 text-center text-lg font-bold border-b" value={icus} onChange={e => setIcus(parseInt(e.target.value) || 0)} />
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Avail. ICUs</div>
+                <input type="number" className="w-24 px-3 py-2 text-center text-lg font-bold rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white outline-none" value={icus} onChange={e => setIcus(parseInt(e.target.value) || 0)} />
               </div>
-              <button onClick={updateInventory} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700">Save</button>
+              <button onClick={updateInventory} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-[0.98]">Save</button>
             </div>
           </div>
         </div>
