@@ -103,6 +103,7 @@ export default function CitizenApp() {
   const [error, setError] = useState('');
   
   const [callId, setCallId] = useState<string | null>(null);
+  const [assignmentData, setAssignmentData] = useState<any>(null);
   const [ambulancePlate, setAmbulancePlate] = useState('');
   const [ambulanceLoc, setAmbulanceLoc] = useState<{lat: number, lng: number} | null>(null);
   const [eta, setEta] = useState<number | null>(null);
@@ -158,6 +159,14 @@ export default function CitizenApp() {
       setError('Please provide phone and select a location on the map');
       return;
     }
+    
+    // Validate phone number is exactly 10 digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone.replace(/\D/g, ''))) {
+      setError('Please enter a valid 10-digit phone number');
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -175,14 +184,43 @@ export default function CitizenApp() {
         const { call, assignment } = res.data;
         if (assignment && assignment.ambulanceId) {
           setCallId(call.id);
-          setEta(assignment.pickup_eta_minutes);
-          setAmbulancePlate(`Assigned ID: ${assignment.ambulanceId}`);
+          setEta(assignment.assignment?.pickup_eta_minutes);
+          setAmbulancePlate(assignment.assignment?.license_plate || `Assigned ID: ${assignment.ambulanceId}`);
+          setAssignmentData(assignment.assignment);
           initTracking(call.id, location.lat, location.lng);
         } else {
           setError('No ambulance available currently. Please try again.');
         }
       }
     } catch (err: any) {
+      setError(err.response?.data?.error || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReassign = async () => {
+    if (!callId) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.post(`/calls/${callId}/reassign`);
+      const { assignment } = res.data;
+      if (assignment && assignment.ambulanceId) {
+        setEta(assignment.assignment?.pickup_eta_minutes);
+        setAmbulancePlate(assignment.assignment?.license_plate || `Assigned ID: ${assignment.ambulanceId}`);
+        setAssignmentData(assignment.assignment);
+        setStatus('Ambulance assigned');
+        setAmbulanceLoc(null);
+      }
+    } catch (err: any) {
+      if (err.response?.data?.assignment) {
+         // Keep current
+         const { assignment } = err.response.data;
+         setEta(assignment.assignment?.pickup_eta_minutes);
+         setAmbulancePlate(assignment.assignment?.license_plate || `Assigned ID: ${assignment.ambulanceId}`);
+         setAssignmentData(assignment.assignment);
+      }
       setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
@@ -346,12 +384,33 @@ export default function CitizenApp() {
                   </svg>
                 </div>
                 <h3 className="font-extrabold text-gray-900 dark:text-white text-3xl mb-2 transition-colors">{status}</h3>
-                <p className="text-gray-500 dark:text-gray-400 font-medium mb-6 text-lg tracking-wide transition-colors">{ambulancePlate}</p>
+                
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl mb-6 text-left border border-slate-100 dark:border-slate-800 shadow-sm transition-colors">
+                  <div className="mb-3 pb-3 border-b border-slate-200 dark:border-slate-800 transition-colors">
+                    <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Ambulance Details</p>
+                    <p className="font-bold text-slate-900 dark:text-white text-lg transition-colors">{ambulancePlate}</p>
+                    {assignmentData?.driver_name && <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Driver: {assignmentData.driver_name}</p>}
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Dispatching From</p>
+                    <p className="font-bold text-slate-900 dark:text-white transition-colors">{assignmentData?.hospital_name || 'Nearby Hospital'}</p>
+                    {assignmentData?.hospital_address && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{assignmentData.hospital_address}</p>}
+                  </div>
+                </div>
+
                 {eta !== null && (
-                  <div className="inline-block bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400 px-6 py-4 rounded-xl font-bold text-2xl shadow-sm transition-colors">
+                  <div className="inline-block bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400 px-6 py-4 rounded-xl font-bold text-2xl shadow-sm transition-colors w-full mb-4">
                     ETA: {eta} minutes
                   </div>
                 )}
+                
+                <button 
+                  onClick={handleReassign}
+                  disabled={loading}
+                  className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-4 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 disabled:opacity-50"
+                >
+                  {loading ? 'Reassigning...' : 'Reassign Ambulance'}
+                </button>
               </div>
               
               <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 transition-colors">

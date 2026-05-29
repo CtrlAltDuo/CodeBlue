@@ -11,8 +11,16 @@ export function getHaversineDistance(lat1: number, lon1: number, lat2: number, l
   return R * c;
 }
 
-export async function getNearestAvailableAmbulance(callLat: number, callLng: number, db: Pool | PoolClient) {
-  const { rows } = await db.query(`SELECT id, current_lat, current_lng FROM ambulances WHERE status = 'available'`);
+export async function getNearestAvailableAmbulance(callLat: number, callLng: number, db: Pool | PoolClient, excludeAmbulanceId?: string) {
+  let queryText = `SELECT id, current_lat, current_lng FROM ambulances WHERE status = 'available'`;
+  const values: any[] = [];
+  
+  if (excludeAmbulanceId) {
+    queryText += ` AND id != $1`;
+    values.push(excludeAmbulanceId);
+  }
+
+  const { rows } = await db.query(queryText, values);
   if (rows.length === 0) return null;
 
   let nearest = rows[0];
@@ -43,18 +51,36 @@ export async function assignAmbulance(callId: string, ambulanceId: string, dista
   return rows[0];
 }
 
-export async function autoDispatch(callId: string, db: Pool | PoolClient) {
+export async function autoDispatch(callId: string, db: Pool | PoolClient, excludeAmbulanceId?: string) {
   const { rows: callRows } = await db.query(`SELECT pickup_lat, pickup_lng FROM incident_calls WHERE id = $1`, [callId]);
   if (callRows.length === 0) throw new Error('Call not found');
   
   const callLat = callRows[0].pickup_lat;
   const callLng = callRows[0].pickup_lng;
 
-  const nearestResult = await getNearestAvailableAmbulance(callLat, callLng, db);
+  const nearestResult = await getNearestAvailableAmbulance(callLat, callLng, db, excludeAmbulanceId);
   if (!nearestResult) throw new Error('No ambulances available');
 
   const { ambulance, distance } = nearestResult;
   const assignment = await assignAmbulance(callId, ambulance.id, distance, db);
 
-  return { ambulanceId: ambulance.id, assignment };
+  // Fetch rich metadata
+  const { rows: richRows } = await db.query(`
+    SELECT 
+      a.license_plate,
+      u.name as driver_name,
+      h.name as hospital_name,
+      h.address as hospital_address
+    FROM ambulances a
+    LEFT JOIN users u ON a.driver_id = u.id
+    LEFT JOIN hospitals h ON a.hospital_id = h.id
+    WHERE a.id = $1
+  `, [ambulance.id]);
+
+  const richData = richRows[0] || {};
+
+  return { 
+    ambulanceId: ambulance.id, 
+    assignment: { ...assignment, ...richData } 
+  };
 }
