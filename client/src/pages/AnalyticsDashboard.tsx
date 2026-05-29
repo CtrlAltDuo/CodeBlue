@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useToast } from '../contexts/ToastContext';
 
@@ -35,12 +35,10 @@ export default function AnalyticsDashboard() {
     const fetchAnalytics = async () => {
       setLoading(true);
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        
         const [volRes, timeRes, utilRes] = await Promise.all([
-          axios.get(`${apiUrl}/api/analytics/call-volume`),
-          axios.get(`${apiUrl}/api/analytics/response-times`),
-          axios.get(`${apiUrl}/api/analytics/ambulance-utilization`)
+          api.get(`/analytics/call-volume`),
+          api.get(`/analytics/response-times`),
+          api.get(`/analytics/ambulance-utilization`)
         ]);
         
         setCallVolume(volRes.data);

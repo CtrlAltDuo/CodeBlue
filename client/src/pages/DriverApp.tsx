@@ -61,8 +61,7 @@ export default function DriverApp() {
   const updateStatus = async (newStatus: any) => {
     if (!ambulanceId) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      await api.patch(`${apiUrl}/api/ambulances/${ambulanceId}/status`, { status: newStatus });
+      await api.patch(`/ambulances/${ambulanceId}/status`, { status: newStatus });
       setStatus(newStatus);
       if (newStatus === 'available') {
         setCurrentCall(null);

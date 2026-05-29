@@ -25,8 +25,9 @@ export default function Layout() {
   const isPublicRoute = !user;
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const socket = io(apiUrl, { reconnectionAttempts: Infinity });
+    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socketUrl = rawApiUrl.replace(/\/api\/?$/, '');
+    const socket = io(socketUrl, { reconnectionAttempts: Infinity });
     
     socket.on('connect', () => setConnected(true));
     socket.on('disconnect', () => setConnected(false));

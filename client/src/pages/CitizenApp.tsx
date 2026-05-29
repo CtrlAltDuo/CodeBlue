@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
+import api from '../api';
 import { io, Socket } from 'socket.io-client';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -112,8 +113,7 @@ export default function CitizenApp() {
 
   useEffect(() => {
     if (location && !callId) {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      axios.get(`${apiUrl}/api/hospitals/nearby?lat=${location.lat}&lng=${location.lng}`)
+      api.get(`/hospitals/nearby?lat=${location.lat}&lng=${location.lng}`)
         .then(res => setNearbyHospitals(res.data))
         .catch(err => console.error(err));
     }
@@ -162,8 +162,7 @@ export default function CitizenApp() {
     setError('');
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const res = await axios.post(`${apiUrl}/api/calls`, {
+      const res = await api.post(`/calls`, {
         caller_phone: phone,
         pickup_address: address,
         pickup_lat: location.lat,
@@ -191,8 +190,9 @@ export default function CitizenApp() {
   };
 
   const initTracking = (activeCallId: string, lat: number, lng: number) => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const socket = io(apiUrl);
+    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socketUrl = rawApiUrl.replace(/\/api\/?$/, '');
+    const socket = io(socketUrl);
     socketRef.current = socket;
     
     socket.emit('subscribe', `call:${activeCallId}`);

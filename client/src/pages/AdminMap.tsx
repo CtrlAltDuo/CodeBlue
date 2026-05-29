@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { io, Socket } from 'socket.io-client';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
@@ -59,10 +59,9 @@ export default function AdminMap() {
 
   const fetchInitialData = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const [ambRes, callRes] = await Promise.all([
-        axios.get(`${apiUrl}/api/ambulances`),
-        axios.get(`${apiUrl}/api/calls?status=PENDING`)
+        api.get(`/ambulances`),
+        api.get(`/calls?status=PENDING`)
       ]);
       setAmbulances(ambRes.data);
       setCalls(callRes.data);
@@ -73,8 +72,9 @@ export default function AdminMap() {
 
   const initSocket = () => {
     if (socketRef.current) return;
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const socket = io(apiUrl);
+    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socketUrl = rawApiUrl.replace(/\/api\/?$/, '');
+    const socket = io(socketUrl);
     socketRef.current = socket;
 
     socket.emit('subscribe', 'admin');
@@ -111,8 +111,7 @@ export default function AdminMap() {
 
     if (newVal && completedCalls.length === 0) {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const res = await axios.get(`${apiUrl}/api/calls?status=COMPLETED`);
+        const res = await api.get(`/calls?status=COMPLETED`);
         setCompletedCalls(res.data);
       } catch (err) {
         console.error(err);
@@ -126,8 +125,7 @@ export default function AdminMap() {
 
     if (newVal && prepositionZones.length === 0) {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const res = await axios.get(`${apiUrl}/api/analytics/preposition-zones`);
+        const res = await api.get(`/analytics/preposition-zones`);
         setPrepositionZones(res.data);
       } catch (err) {
         console.error(err);
