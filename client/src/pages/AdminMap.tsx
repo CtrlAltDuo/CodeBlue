@@ -1,59 +1,61 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
-import { useMapmyIndia } from '../hooks/useMapmyIndia';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import L from 'leaflet';
 import type { Ambulance, IncidentCall } from '../../../shared/types';
 
-const getAmbulanceSvg = (status: string) => {
+// Map Icons
+const getAmbulanceIcon = (status: string) => {
   let color = 'gray';
   if (status === 'AVAILABLE') color = '#22c55e';
   if (status === 'EN_ROUTE') color = '#eab308';
   if (status === 'OCCUPIED') color = '#ef4444';
   
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/></svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  
+  return new L.DivIcon({
+    className: 'custom-div-icon',
+    html: svg,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
+  });
 };
 
-const getCallSvg = () => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+const callIcon = new L.DivIcon({
+  className: 'custom-div-icon',
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <circle cx="16" cy="16" r="8" fill="#ef4444">
       <animate attributeName="r" values="8;16;8" dur="1.5s" repeatCount="indefinite" />
       <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
     </circle>
     <circle cx="16" cy="16" r="6" fill="#b91c1c" />
-  </svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-};
+  </svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  popupAnchor: [0, -16]
+});
 
 export default function AdminMap() {
   const [ambulances, setAmbulances] = useState<Ambulance[]>([]);
   const [calls, setCalls] = useState<IncidentCall[]>([]);
+  const [completedCalls, setCompletedCalls] = useState<IncidentCall[]>([]);
+  const [prepositionZones, setPrepositionZones] = useState<any[]>([]);
+  
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [heatmapMode, setHeatmapMode] = useState(false);
   const [prepositionMode, setPrepositionMode] = useState(false);
   
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
   const socketRef = useRef<Socket | null>(null);
-  
-  const ambulanceMarkersRef = useRef<Record<string, any>>({});
-  const callMarkersRef = useRef<Record<string, any>>({});
-  const heatmapLayerRef = useRef<any>(null);
-  const prepositionOverlaysRef = useRef<any[]>([]);
-
-  const mapLoaded = useMapmyIndia();
 
   useEffect(() => {
     fetchInitialData();
+    initSocket();
+    return () => {
+      if (socketRef.current) socketRef.current.disconnect();
+    };
   }, []);
-
-  useEffect(() => {
-    if (mapLoaded && ambulances.length > 0) {
-      if (!mapInstanceRef.current) {
-        initMap(ambulances, calls);
-      }
-    }
-  }, [mapLoaded, ambulances, calls]);
 
   const fetchInitialData = async () => {
     try {
@@ -67,83 +69,6 @@ export default function AdminMap() {
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const initMap = (initialAmbulances: Ambulance[], initialCalls: IncidentCall[]) => {
-    if (!mapRef.current) return;
-    
-    const MapmyIndia = (window as any).MapmyIndia;
-
-    const map = new MapmyIndia.Map(mapRef.current, {
-      center: [20.5937, 78.9629],
-      zoom: 5
-    });
-    mapInstanceRef.current = map;
-
-    initialAmbulances.forEach(amb => createAmbulanceMarker(amb));
-    initialCalls.forEach(call => createCallMarker(call));
-
-    if (initialCalls.length > 0) {
-      const bounds = initialCalls.map(c => [c.pickup_lat, c.pickup_lng]);
-      if (bounds.length > 0) {
-          map.setCenter({ lat: bounds[0][0], lng: bounds[0][1] });
-          map.setZoom(10);
-      }
-    }
-
-    initSocket();
-  };
-
-  const createAmbulanceMarker = (amb: Ambulance) => {
-    if (!mapInstanceRef.current) return;
-    const MapmyIndia = (window as any).MapmyIndia;
-    
-    if (ambulanceMarkersRef.current[amb.id]) {
-      ambulanceMarkersRef.current[amb.id].remove();
-    }
-
-    const marker = new MapmyIndia.Marker({
-      map: mapInstanceRef.current,
-      position: [amb.current_lat, amb.current_lng],
-      icon: getAmbulanceSvg(amb.status)
-    });
-
-    const info = `<div>
-      <h3 style="font-weight:bold">${amb.license_plate}</h3>
-      <p>Status: ${amb.status}</p>
-      <p>Driver ID: ${amb.driver_id}</p>
-    </div>`;
-
-    // Wait for the marker to be clicked to show the info
-    marker.bindPopup(info);
-
-    ambulanceMarkersRef.current[amb.id] = marker;
-  };
-
-  const createCallMarker = (call: IncidentCall) => {
-    if (!mapInstanceRef.current) return;
-    const MapmyIndia = (window as any).MapmyIndia;
-
-    if (callMarkersRef.current[call.id]) {
-      callMarkersRef.current[call.id].remove();
-    }
-
-    const marker = new MapmyIndia.Marker({
-      map: mapInstanceRef.current,
-      position: [call.pickup_lat, call.pickup_lng],
-      icon: getCallSvg()
-    });
-
-    const info = `<div>
-      <h3 style="font-weight:bold">Emergency</h3>
-      <p>${call.pickup_address}</p>
-      <p>Phone: ${call.caller_phone}</p>
-      <p>Status: ${call.status}</p>
-    </div>`;
-
-    marker.bindPopup(info);
-
-    callMarkersRef.current[call.id] = marker;
   };
 
   const initSocket = () => {
@@ -161,7 +86,6 @@ export default function AdminMap() {
         if (idx !== -1) {
           updated[idx].current_lat = data.lat;
           updated[idx].current_lng = data.lng;
-          createAmbulanceMarker(updated[idx]);
         }
         return updated;
       });
@@ -170,165 +94,185 @@ export default function AdminMap() {
     socket.on('call_assigned', (data: any) => {
       setCalls(prev => {
         if (!prev.find(c => c.id === data.call.id)) {
-           const updated = [data.call, ...prev];
-           createCallMarker(data.call);
-           return updated;
+           return [data.call, ...prev];
         }
         return prev;
       });
     });
     
     socket.on('call_completed', (data: any) => {
-      setCalls(prev => {
-         const updated = prev.filter(c => c.id !== data.id);
-         if (callMarkersRef.current[data.id]) {
-           callMarkersRef.current[data.id].remove();
-           delete callMarkersRef.current[data.id];
-         }
-         return updated;
-      });
+      setCalls(prev => prev.filter(c => c.id !== data.id));
     });
   };
-
-  useEffect(() => {
-    return () => {
-      if (socketRef.current) socketRef.current.disconnect();
-    };
-  }, []);
 
   const toggleHeatmap = async () => {
     const newVal = !heatmapMode;
     setHeatmapMode(newVal);
-    const MapmyIndia = (window as any).MapmyIndia;
 
-    if (newVal) {
-      Object.values(ambulanceMarkersRef.current).forEach(m => m.remove());
-      Object.values(callMarkersRef.current).forEach(m => m.remove());
-
+    if (newVal && completedCalls.length === 0) {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const res = await axios.get(`${apiUrl}/api/calls?status=COMPLETED`);
-        const heatData = res.data.map((c: IncidentCall) => ({
-          lat: c.pickup_lat,
-          lng: c.pickup_lng,
-          weight: 1
-        }));
-
-        if (MapmyIndia.HeatmapLayer) {
-           heatmapLayerRef.current = new MapmyIndia.HeatmapLayer({
-             map: mapInstanceRef.current,
-             data: heatData,
-             radius: 20
-           });
-        }
+        setCompletedCalls(res.data);
       } catch (err) {
         console.error(err);
       }
-    } else {
-      if (heatmapLayerRef.current) {
-        try {
-          heatmapLayerRef.current.clear();
-        } catch(e) {}
-        heatmapLayerRef.current = null;
-      }
-      ambulances.forEach(createAmbulanceMarker);
-      calls.forEach(createCallMarker);
     }
   };
 
   const togglePreposition = async () => {
     const newVal = !prepositionMode;
     setPrepositionMode(newVal);
-    const MapmyIndia = (window as any).MapmyIndia;
 
-    if (newVal) {
+    if (newVal && prepositionZones.length === 0) {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const res = await axios.get(`${apiUrl}/api/analytics/preposition-zones`);
-        
-        prepositionOverlaysRef.current = res.data.map((zone: any) => {
-          return new MapmyIndia.Circle({
-            map: mapInstanceRef.current,
-            center: [zone.lat, zone.lng],
-            radius: 5000,
-            fillColor: '#3b82f6',
-            fillOpacity: 0.4,
-            strokeColor: '#2563eb',
-            strokeOpacity: 0.8,
-            strokeWeight: 2
-          });
-        });
+        setPrepositionZones(res.data);
       } catch (err) {
         console.error(err);
       }
-    } else {
-      prepositionOverlaysRef.current.forEach(overlay => {
-        try { overlay.remove(); } catch(e) {}
-      });
-      prepositionOverlaysRef.current = [];
     }
   };
 
-  return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <div id="admin-map" ref={mapRef} className="absolute inset-0 z-0"></div>
+  // Center of India roughly
+  const defaultCenter: [number, number] = [20.5937, 78.9629];
 
-      <div className={`absolute top-4 left-4 z-10 bg-white rounded-xl shadow-xl transition-all duration-300 ${sidebarOpen ? 'w-80' : 'w-16'} overflow-hidden`}>
-        <div className="p-4 bg-gray-900 text-white flex justify-between items-center cursor-pointer" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          <h2 className={`font-bold whitespace-nowrap ${!sidebarOpen && 'hidden'}`}>Dispatch Center</h2>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-slate-900">
+      <MapContainer 
+        center={defaultCenter} 
+        zoom={5} 
+        style={{ height: '100%', width: '100%' }}
+        className="z-0"
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        />
+
+        {/* Heatmap/Historical Incident Clusters overlay */}
+        {heatmapMode && completedCalls.map(c => (
+          <Circle 
+            key={c.id}
+            center={[c.pickup_lat, c.pickup_lng]} 
+            pathOptions={{ fillColor: '#ef4444', color: 'transparent', fillOpacity: 0.3 }} 
+            radius={2000} 
+          />
+        ))}
+
+        {/* Preposition Zones overlay */}
+        {prepositionMode && prepositionZones.map((zone, i) => (
+          <Circle 
+            key={i}
+            center={[zone.lat, zone.lng]} 
+            pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.2, weight: 2 }} 
+            radius={5000} 
+          >
+            <Popup>AI Pre-positioning Hotspot</Popup>
+          </Circle>
+        ))}
+
+        {/* Live Active Data Layers */}
+        {!heatmapMode && (
+          <>
+            {ambulances.map(amb => (
+              <Marker 
+                key={amb.id} 
+                position={[amb.current_lat, amb.current_lng]} 
+                icon={getAmbulanceIcon(amb.status)}
+              >
+                <Popup className="rounded-xl overflow-hidden shadow-lg border-0">
+                  <div className="p-1">
+                    <h3 className="font-bold text-gray-900 text-lg border-b pb-2 mb-2">{amb.license_plate}</h3>
+                    <p className="text-gray-600 text-sm mb-1"><span className="font-semibold">Status:</span> {amb.status}</p>
+                    <p className="text-gray-600 text-sm"><span className="font-semibold">Driver ID:</span> {amb.driver_id}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {calls.map(call => (
+              <Marker 
+                key={call.id} 
+                position={[call.pickup_lat, call.pickup_lng]} 
+                icon={callIcon}
+              >
+                <Popup>
+                  <div className="p-1">
+                    <h3 className="font-bold text-red-600 text-lg border-b pb-2 mb-2">Emergency</h3>
+                    <p className="text-gray-700 text-sm mb-1 font-medium">{call.pickup_address}</p>
+                    <p className="text-gray-600 text-sm mb-1"><span className="font-semibold">Phone:</span> {call.caller_phone}</p>
+                    <p className="text-gray-600 text-sm"><span className="font-semibold">Status:</span> {call.status}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </>
+        )}
+      </MapContainer>
+
+      <div className={`absolute top-4 left-4 z-10 bg-gray-900/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700 transition-all duration-300 ${sidebarOpen ? 'w-80' : 'w-16'} overflow-hidden`}>
+        <div className="p-5 text-white flex justify-between items-center cursor-pointer border-b border-gray-800" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <h2 className={`font-bold tracking-wide text-lg ${!sidebarOpen && 'hidden'}`}>Dispatch Center</h2>
+          <svg className="w-6 h-6 text-gray-400 hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </div>
         
         {sidebarOpen && (
-          <div className="p-4">
+          <div className="p-5">
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Live Status</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-blue-50 p-3 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-blue-600">{calls.length}</div>
-                  <div className="text-xs text-blue-800">Active Calls</div>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Live Fleet Status</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
+                  <div className="text-3xl font-black text-blue-500 mb-1">{calls.length}</div>
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Active Calls</div>
                 </div>
-                <div className="bg-green-50 p-3 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
+                  <div className="text-3xl font-black text-green-500 mb-1">
                     {ambulances.filter(a => a.status === 'AVAILABLE').length}
                   </div>
-                  <div className="text-xs text-green-800">Available</div>
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Available</div>
                 </div>
-                <div className="bg-yellow-50 p-3 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-yellow-600">
+                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
+                  <div className="text-3xl font-black text-yellow-500 mb-1">
                     {ambulances.filter(a => a.status === 'EN_ROUTE').length}
                   </div>
-                  <div className="text-xs text-yellow-800">En Route</div>
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">En Route</div>
                 </div>
-                <div className="bg-red-50 p-3 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-red-600">
+                <div className="bg-gray-800/80 border border-gray-700 p-4 rounded-xl text-center">
+                  <div className="text-3xl font-black text-red-500 mb-1">
                     {ambulances.filter(a => a.status === 'OCCUPIED').length}
                   </div>
-                  <div className="text-xs text-red-800">Occupied</div>
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Occupied</div>
                 </div>
               </div>
             </div>
             
-            <button
-              onClick={toggleHeatmap}
-              className={`w-full py-2 px-4 mb-2 rounded-lg font-medium transition-colors ${
-                heatmapMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-              }`}
-            >
-              {heatmapMode ? 'Exit Heatmap Mode' : 'Show Incident Heatmap'}
-            </button>
-            <button
-              onClick={togglePreposition}
-              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                prepositionMode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-              }`}
-            >
-              {prepositionMode ? 'Hide Pre-position Zones' : 'Show Pre-position Zones'}
-            </button>
+            <div className="space-y-3 pt-4 border-t border-gray-800">
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Analytics Overlay</h3>
+              <button
+                onClick={toggleHeatmap}
+                className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                  heatmapMode ? 'bg-red-500/20 text-red-400 border border-red-500/50' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                }`}
+              >
+                <div className={`w-2 h-2 rounded-full ${heatmapMode ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                {heatmapMode ? 'Exit Heatmap Mode' : 'Show Incident Clusters'}
+              </button>
+              
+              <button
+                onClick={togglePreposition}
+                className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                  prepositionMode ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                }`}
+              >
+                <div className={`w-2 h-2 rounded-full ${prepositionMode ? 'bg-blue-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                {prepositionMode ? 'Hide Predictive Zones' : 'Show Predictive Zones'}
+              </button>
+            </div>
           </div>
         )}
       </div>
     </div>
   );
 }
-

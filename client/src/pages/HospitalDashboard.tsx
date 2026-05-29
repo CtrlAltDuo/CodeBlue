@@ -39,13 +39,8 @@ export default function HospitalDashboard() {
       setCalls(prev => [data, ...prev]);
     });
 
-    socket.on('location_update', (data: any) => {
-      // optional: update last updated time or location if we were showing it
-    });
-
     return () => {
       socket.off('call_assigned');
-      socket.off('location_update');
     };
   }, [socket, user]);
 
@@ -58,88 +53,143 @@ export default function HospitalDashboard() {
     }
   };
 
-  const statusColors = {
-    available: 'bg-green-100 text-green-800',
-    en_route: 'bg-yellow-100 text-yellow-800',
-    occupied: 'bg-red-100 text-red-800',
-    offline: 'bg-gray-100 text-gray-800'
+  const statusConfig = {
+    available: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', label: 'Available' },
+    en_route: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'En Route' },
+    occupied: { color: 'bg-rose-100 text-rose-800 border-rose-200', label: 'Occupied' },
+    offline: { color: 'bg-slate-100 text-slate-800 border-slate-200', label: 'Offline' }
   };
 
+  const activeAmbulancesCount = ambulances.filter(a => a.status === 'en_route' || a.status === 'occupied').length;
+  const availableAmbulancesCount = ambulances.filter(a => a.status === 'available').length;
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="flex-1 bg-slate-50 p-6 md:p-10">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-semibold mb-6">Ambulance Fleet</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-3 px-4 text-sm font-medium text-gray-500">License Plate</th>
-                  <th className="py-3 px-4 text-sm font-medium text-gray-500">Driver</th>
-                  <th className="py-3 px-4 text-sm font-medium text-gray-500">Status</th>
-                  <th className="py-3 px-4 text-sm font-medium text-gray-500">Last Updated</th>
-                  <th className="py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ambulances.map(amb => (
-                  <tr key={amb.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-4 font-medium">{amb.license_plate}</td>
-                    <td className="py-3 px-4 text-gray-600">{amb.driver_name || 'N/A'}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[amb.status]}`}>
-                        {amb.status.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-500">
-                      {new Date(amb.updated_at).toLocaleTimeString()}
-                    </td>
-                    <td className="py-3 px-4">
-                      <select 
-                        value={amb.status}
-                        onChange={(e) => updateStatus(amb.id, e.target.value as any)}
-                        className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      >
-                        <option value="available">Available</option>
-                        <option value="en_route">En Route</option>
-                        <option value="occupied">Occupied</option>
-                        <option value="offline">Offline</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-                {ambulances.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-gray-500">No ambulances found.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Hospital Command Center</h1>
+            <p className="text-slate-500 mt-1 font-medium">Real-time overview of fleet operations and incoming emergencies.</p>
+          </div>
+          <div className="flex gap-4">
+            <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm text-center">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Fleet</div>
+              <div className="text-2xl font-black text-blue-600">{activeAmbulancesCount}</div>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm text-center">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Available</div>
+              <div className="text-2xl font-black text-emerald-600">{availableAmbulancesCount}</div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-semibold mb-6">Live Call Queue</h2>
-          <div className="space-y-4">
-            {calls.map((c, idx) => (
-              <div key={idx} className="p-4 rounded-lg border border-blue-100 bg-blue-50 flex justify-between items-center">
-                <div>
-                  <p className="font-semibold text-blue-900">Call ID: {c.call.id.slice(0, 8)}...</p>
-                  <p className="text-sm text-blue-700">Address: {c.call.pickup_address}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-blue-900">Assigned to: {c.assignment.ambulanceId.slice(0, 8)}</p>
-                  <p className="text-lg font-bold text-blue-600">ETA: {c.assignment.assignment.pickup_eta_minutes} min</p>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Ambulance Fleet Data Grid */}
+          <div className="lg:col-span-2 space-y-4">
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+              Fleet Status
+            </h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Vehicle</th>
+                      <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Driver</th>
+                      <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                      <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Last Sync</th>
+                      <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {ambulances.map(amb => (
+                      <tr key={amb.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-4 px-6">
+                          <div className="font-bold text-slate-900">{amb.license_plate}</div>
+                          <div className="text-xs text-slate-400 font-mono">ID: {amb.id.slice(0,8)}</div>
+                        </td>
+                        <td className="py-4 px-6 font-medium text-slate-700">
+                          {amb.driver_name || <span className="text-slate-300 italic">Unassigned</span>}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${statusConfig[amb.status].color}`}>
+                            {statusConfig[amb.status].label}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-sm text-slate-500 font-medium">
+                          {new Date(amb.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <select 
+                            value={amb.status}
+                            onChange={(e) => updateStatus(amb.id, e.target.value as any)}
+                            className="text-sm font-medium text-slate-700 border-slate-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 cursor-pointer hover:bg-slate-50"
+                          >
+                            <option value="available">Set Available</option>
+                            <option value="en_route">Set En Route</option>
+                            <option value="occupied">Set Occupied</option>
+                            <option value="offline">Set Offline</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                    {ambulances.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-slate-400 font-medium">No ambulances registered to this hospital.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-            ))}
-            {calls.length === 0 && (
-              <p className="text-gray-500 italic">No incoming calls in current session.</p>
-            )}
+            </div>
           </div>
-        </div>
 
+          {/* Incoming Emergency Feed */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <svg className="w-5 h-5 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Live Dispatch Feed
+            </h2>
+            <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-5 min-h-[400px] flex flex-col">
+              <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                {calls.map((c, idx) => (
+                  <div key={idx} className="p-4 rounded-xl border border-slate-700 bg-slate-800 animate-fade-in hover:border-blue-500/50 transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                        DISPATCHED
+                      </span>
+                      <span className="text-xs font-mono text-slate-500">#{c.call.id.slice(0, 6)}</span>
+                    </div>
+                    <div className="text-sm font-medium text-slate-300 mb-3 leading-relaxed">
+                      {c.call.pickup_address}
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-700">
+                      <div className="flex items-center gap-2 text-sm text-slate-400 font-medium">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+                        Amb. {c.assignment.ambulanceId.slice(0, 6)}
+                      </div>
+                      <div className="text-sm font-bold text-blue-400">
+                        ETA: {c.assignment.assignment.pickup_eta_minutes}m
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {calls.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-3">
+                    <svg className="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p className="text-sm font-medium">Waiting for emergency dispatches...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

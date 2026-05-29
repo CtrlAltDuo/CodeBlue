@@ -18,7 +18,7 @@ export default function Login() {
       login(res.data.token, res.data.user);
       if (res.data.user.role === 'hospital_staff') navigate('/hospital');
       else if (res.data.user.role === 'driver') navigate('/driver');
-      else navigate('/');
+      else navigate('/citizen');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed');
     }
