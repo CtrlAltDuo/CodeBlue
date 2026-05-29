@@ -16,12 +16,7 @@ export interface Hospital {
   contact_phone: string;
 }
 
-export enum AmbulanceStatus {
-  AVAILABLE = 'AVAILABLE',
-  EN_ROUTE = 'EN_ROUTE',
-  OCCUPIED = 'OCCUPIED',
-  OFFLINE = 'OFFLINE',
-}
+export type AmbulanceStatus = 'AVAILABLE' | 'EN_ROUTE' | 'OCCUPIED' | 'OFFLINE';
 
 export interface Ambulance {
   id: string;
@@ -34,13 +29,7 @@ export interface Ambulance {
   updated_at: Date;
 }
 
-export enum CallStatus {
-  PENDING = 'PENDING',
-  ASSIGNED = 'ASSIGNED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
+export type CallStatus = 'PENDING' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export interface IncidentCall {
   id: string;
