@@ -333,7 +333,7 @@ export default function CitizenApp() {
               </button>
             </form>
             
-            {nearbyHospitals.length > 0 && (
+            {nearbyHospitals.length > 0 && phone.replace(/\D/g, '').length === 10 && address && location && (
               <div className="mt-8 space-y-4">
                 <h3 className="font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider text-sm transition-colors">Nearby Emergency Centers</h3>
                 <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
@@ -442,7 +442,7 @@ export default function CitizenApp() {
           {!callId ? (
             <>
               <LocationSelector location={location} setLocation={setLocation} setAddress={setAddress} />
-              {nearbyHospitals.map(h => (
+              {phone.replace(/\D/g, '').length === 10 && address && location && nearbyHospitals.map(h => (
                 <Marker key={h.id} position={[h.lat, h.lng]} icon={hospitalIcon}>
                   <Popup>
                     <div className="text-sm min-w-[200px]">
