@@ -10,8 +10,26 @@ export default function Register() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const validatePassword = (password: string) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$/;
+    return regex.test(password);
+  };
+
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateEmail(email)) {
+      setError('Invalid email format.');
+      return;
+    }
+    if (!validatePassword(password)) {
+      setError('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.');
+      return;
+    }
     setError('');
     try {
       await api.post('/auth/register', { name, email, password, role });

@@ -12,6 +12,8 @@ const router = Router();
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, role } = req.body;
+    if (!validateEmail(email)) { res.status(400).json({ error: 'Invalid email format' }); return; }
+    if (!validatePassword(password)) { res.status(400).json({ error: 'Password must be strong' }); return; }
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await pool.query(
       'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
@@ -23,15 +25,34 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+const validatePassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$/.test(password);
+const validatePhone = (phone: string) => /^\+?[\d\s-]{10,15}$/.test(phone);
+const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validateNumberPlate = (plate: string) => /^[A-Z0-9\s-]{6,15}$/i.test(plate);
+
 router.post('/register-hospital', async (req: Request, res: Response): Promise<void> => {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
     const { 
       adminName, adminEmail, adminPassword, 
       hospitalName, hospitalAddress, hospitalPhone, lat, lng, 
       totalBeds, totalICUs, fleet 
     } = req.body;
+
+    if (!validateEmail(adminEmail)) { res.status(400).json({ error: 'Invalid admin email format' }); return; }
+    if (!validatePassword(adminPassword)) { res.status(400).json({ error: 'Admin password must be strong' }); return; }
+    if (!validatePhone(hospitalPhone)) { res.status(400).json({ error: 'Invalid hospital phone number format' }); return; }
+    
+    if (fleet && Array.isArray(fleet)) {
+      for (let i = 0; i < fleet.length; i++) {
+        const v = fleet[i];
+        if (!validateNumberPlate(v.numberPlate)) { res.status(400).json({ error: `Ambulance #${i+1} has an invalid number plate format` }); return; }
+        if (!validateEmail(v.driverEmail)) { res.status(400).json({ error: `Ambulance #${i+1} driver email is invalid` }); return; }
+        if (!validatePassword(v.driverPassword)) { res.status(400).json({ error: `Ambulance #${i+1} driver password must be strong` }); return; }
+      }
+    }
+
+    await client.query('BEGIN');
 
     const hospitalResult = await client.query(
       `INSERT INTO hospitals (name, address, lat, lng, contact_phone, total_beds, available_beds, total_icus, available_icus)

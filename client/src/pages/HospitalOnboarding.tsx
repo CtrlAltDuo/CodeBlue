@@ -63,10 +63,57 @@ export default function HospitalOnboarding() {
     setFleet(fleet.filter((_, i) => i !== index));
   };
 
+  const validatePassword = (password: string) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$/;
+    return regex.test(password);
+  };
+
+  const validatePhone = (phone: string) => {
+    const regex = /^\+?[\d\s-]{10,15}$/;
+    return regex.test(phone);
+  };
+
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validateNumberPlate = (plate: string) => {
+    const regex = /^[A-Z0-9\s-]{6,15}$/i;
+    return regex.test(plate);
+  };
+
   const handleSubmit = async () => {
     if (!location) {
       setError('Please select a hospital location on the map.');
       return;
+    }
+    if (!validateEmail(adminEmail)) {
+      setError('Invalid admin email format.');
+      return;
+    }
+    if (!validatePassword(adminPassword)) {
+      setError('Admin password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.');
+      return;
+    }
+    if (!validatePhone(hospitalPhone)) {
+      setError('Invalid hospital phone number format. It should be 10-15 digits.');
+      return;
+    }
+    for (let i = 0; i < fleet.length; i++) {
+      const v = fleet[i];
+      if (!validateNumberPlate(v.numberPlate)) {
+        setError(`Ambulance #${i + 1} has an invalid number plate format.`);
+        return;
+      }
+      if (!validateEmail(v.driverEmail)) {
+        setError(`Ambulance #${i + 1} driver email is invalid.`);
+        return;
+      }
+      if (!validatePassword(v.driverPassword)) {
+        setError(`Ambulance #${i + 1} driver password must be strong (8+ chars, uppercase, lowercase, number).`);
+        return;
+      }
     }
     setError('');
     setLoading(true);
