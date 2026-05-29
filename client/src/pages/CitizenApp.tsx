@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
-import { mappls, mappls_plugin } from 'mappls-web-maps';
+import { useMapmyIndia } from '../hooks/useMapmyIndia';
 
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
@@ -37,33 +37,28 @@ export default function CitizenApp() {
   const ambulanceMarkerRef = useRef<any>(null);
   const socketRef = useRef<Socket | null>(null);
 
+  const mapLoaded = useMapmyIndia();
+
   useEffect(() => {
-    const mapplsClassObject = new mappls();
-    mapplsClassObject.initialize(import.meta.env.VITE_MAPPLS_API_KEY, { map: true }, () => {
-      const pluginObject = new mappls_plugin();
-      pluginObject.autoSuggest({
+    if (!mapLoaded) return;
+    
+    // MapmyIndia place plugin handles autosuggest
+    try {
+      new (window as any).MapmyIndia.place({
         id: "address-input",
         callback: (data: any) => {
           if (data && data.length > 0) {
             setAddress(data[0].placeAddress);
             if (data[0].latitude && data[0].longitude) {
               setLocation({ lat: Number(data[0].latitude), lng: Number(data[0].longitude) });
-            } else if (data[0].eLoc) {
-              pluginObject.pinMarker({
-                map: null,
-                pin: data[0].eLoc,
-                callback: (pinData: any) => {
-                   if (pinData && pinData.lat && pinData.lng) {
-                     setLocation({ lat: Number(pinData.lat), lng: Number(pinData.lng) });
-                   }
-                }
-              })
             }
           }
         }
       });
-    });
-  }, []);
+    } catch (e) {
+      console.error("AutoSuggest error:", e);
+    }
+  }, [mapLoaded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,51 +99,46 @@ export default function CitizenApp() {
   };
 
   const initTracking = (activeCallId: string, lat: number, lng: number) => {
-    const mapplsClassObject = new mappls();
-    mapplsClassObject.initialize(import.meta.env.VITE_MAPPLS_API_KEY, { map: true }, () => {
-      if (mapRef.current) {
-        const map = mapplsClassObject.Map({
-          id: mapRef.current.id,
-          properties: {
-            center: [lat, lng],
-            zoom: 14
-          }
-        });
-        mapInstanceRef.current = map;
+    if (!mapLoaded || !mapRef.current) return;
+    
+    const MapmyIndia = (window as any).MapmyIndia;
+    const map = new MapmyIndia.Map(mapRef.current, {
+      center: [lat, lng],
+      zoom: 14
+    });
+    mapInstanceRef.current = map;
 
-        mapplsClassObject.Marker({
+    new MapmyIndia.Marker({
+      map: map,
+      position: [lat, lng],
+      icon: 'https://apis.mapmyindia.com/map_v3/1.png'
+    });
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socket = io(apiUrl);
+    socketRef.current = socket;
+    
+    socket.emit('subscribe', `call:${activeCallId}`);
+    
+    socket.on('location_update', (data: { lat: number, lng: number }) => {
+      if (!ambulanceMarkerRef.current) {
+        ambulanceMarkerRef.current = new MapmyIndia.Marker({
           map: map,
-          position: { lat, lng },
-          icon_url: 'https://apis.mapmyindia.com/map_v3/1.png'
+          position: [data.lat, data.lng],
+          icon: 'https://apis.mapmyindia.com/map_v3/2.png'
         });
+      } else {
+        ambulanceMarkerRef.current.setPosition([data.lat, data.lng]);
+      }
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const socket = io(apiUrl);
-        socketRef.current = socket;
-        
-        socket.emit('subscribe', `call:${activeCallId}`);
-        
-        socket.on('location_update', (data: { lat: number, lng: number }) => {
-          if (!ambulanceMarkerRef.current) {
-            ambulanceMarkerRef.current = mapplsClassObject.Marker({
-              map: map,
-              position: { lat: data.lat, lng: data.lng },
-              icon_url: 'https://apis.mapmyindia.com/map_v3/2.png'
-            });
-          } else {
-            ambulanceMarkerRef.current.setPosition({ lat: data.lat, lng: data.lng });
-          }
-
-          const distKm = getDistanceFromLatLonInKm(lat, lng, data.lat, data.lng);
-          const newEtaMinutes = Math.round(distKm * 1.5);
-          setEta(Math.max(1, newEtaMinutes));
-          
-          if (distKm < 0.1) {
-            setStatus('Arrived');
-          } else {
-            setStatus('Driver en route');
-          }
-        });
+      const distKm = getDistanceFromLatLonInKm(lat, lng, data.lat, data.lng);
+      const newEtaMinutes = Math.round(distKm * 1.5);
+      setEta(Math.max(1, newEtaMinutes));
+      
+      if (distKm < 0.1) {
+        setStatus('Arrived');
+      } else {
+        setStatus('Driver en route');
       }
     });
   };

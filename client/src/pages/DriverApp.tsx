@@ -58,20 +58,20 @@ export default function DriverApp() {
     };
   }, [socket, ambulanceId]);
 
-  useEffect(() => {
-    if (pendingCall) {
-      timerRef.current = setInterval(() => {
-        setTimeoutSecs((prev) => {
-          if (prev <= 1) {
-            handleAccept(pendingCall);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+  const updateStatus = async (newStatus: any) => {
+    if (!ambulanceId) return;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      await api.patch(`${apiUrl}/api/ambulances/${ambulanceId}/status`, { status: newStatus });
+      setStatus(newStatus);
+      if (newStatus === 'available') {
+        setCurrentCall(null);
+      }
+      socket?.emit('status_change', { ambulanceId, status: newStatus });
+    } catch (err) {
+      console.error('Failed to update status', err);
     }
-    return () => clearInterval(timerRef.current);
-  }, [pendingCall]);
+  };
 
   const handleAccept = (callData: any) => {
     clearInterval(timerRef.current);
@@ -87,18 +87,21 @@ export default function DriverApp() {
     setPendingCall(null);
   };
 
-  const updateStatus = async (newStatus: any) => {
-    if (!ambulanceId) return;
-    try {
-      await api.patch(`/ambulances/${ambulanceId}/status`, { status: newStatus });
-      setStatus(newStatus);
-      if (newStatus === 'available') {
-        setCurrentCall(null);
-      }
-    } catch (err) {
-      console.error(err);
+  useEffect(() => {
+    if (pendingCall) {
+      timerRef.current = setInterval(() => {
+        setTimeoutSecs((prev) => {
+          if (prev <= 1) {
+            handleAccept(pendingCall);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
-  };
+    return () => clearInterval(timerRef.current);
+  }, [pendingCall]);
+
 
   if (!ambulanceId) {
     return <div className="p-8 text-center text-xl">Loading Ambulance Data...</div>;

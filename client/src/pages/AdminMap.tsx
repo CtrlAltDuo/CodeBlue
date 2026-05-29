@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
-import { mappls, mappls_plugin } from 'mappls-web-maps';
-import { Ambulance, IncidentCall } from '../../../shared/types';
+import { useMapmyIndia } from '../hooks/useMapmyIndia';
+import type { Ambulance, IncidentCall } from '../../../shared/types';
 
 const getAmbulanceSvg = (status: string) => {
   let color = 'gray';
@@ -35,16 +35,25 @@ export default function AdminMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const socketRef = useRef<Socket | null>(null);
-  const mapplsClassRef = useRef<any>(null);
   
   const ambulanceMarkersRef = useRef<Record<string, any>>({});
   const callMarkersRef = useRef<Record<string, any>>({});
   const heatmapLayerRef = useRef<any>(null);
   const prepositionOverlaysRef = useRef<any[]>([]);
 
+  const mapLoaded = useMapmyIndia();
+
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    if (mapLoaded && ambulances.length > 0) {
+      if (!mapInstanceRef.current) {
+        initMap(ambulances, calls);
+      }
+    }
+  }, [mapLoaded, ambulances, calls]);
 
   const fetchInitialData = async () => {
     try {
@@ -55,55 +64,48 @@ export default function AdminMap() {
       ]);
       setAmbulances(ambRes.data);
       setCalls(callRes.data);
-      initMap(ambRes.data, callRes.data);
     } catch (err) {
       console.error(err);
     }
   };
 
   const initMap = (initialAmbulances: Ambulance[], initialCalls: IncidentCall[]) => {
-    const mapplsClassObject = new mappls();
-    mapplsClassRef.current = mapplsClassObject;
+    if (!mapRef.current) return;
+    
+    const MapmyIndia = (window as any).MapmyIndia;
 
-    mapplsClassObject.initialize(import.meta.env.VITE_MAPPLS_API_KEY, { map: true }, () => {
-      if (!mapRef.current) return;
-
-      const map = mapplsClassObject.Map({
-        id: mapRef.current.id,
-        properties: {
-          center: [20.5937, 78.9629],
-          zoom: 5
-        }
-      });
-      mapInstanceRef.current = map;
-
-      initialAmbulances.forEach(amb => createAmbulanceMarker(amb));
-      initialCalls.forEach(call => createCallMarker(call));
-
-      if (initialCalls.length > 0) {
-        const bounds = initialCalls.map(c => [c.pickup_lat, c.pickup_lng]);
-        // Simple fit bounds logic or just set center to first call
-        if (bounds.length > 0) {
-           map.setCenter({ lat: bounds[0][0], lng: bounds[0][1] });
-           map.setZoom(10);
-        }
-      }
-
-      initSocket();
+    const map = new MapmyIndia.Map(mapRef.current, {
+      center: [20.5937, 78.9629],
+      zoom: 5
     });
+    mapInstanceRef.current = map;
+
+    initialAmbulances.forEach(amb => createAmbulanceMarker(amb));
+    initialCalls.forEach(call => createCallMarker(call));
+
+    if (initialCalls.length > 0) {
+      const bounds = initialCalls.map(c => [c.pickup_lat, c.pickup_lng]);
+      if (bounds.length > 0) {
+          map.setCenter({ lat: bounds[0][0], lng: bounds[0][1] });
+          map.setZoom(10);
+      }
+    }
+
+    initSocket();
   };
 
   const createAmbulanceMarker = (amb: Ambulance) => {
-    if (!mapInstanceRef.current || !mapplsClassRef.current) return;
+    if (!mapInstanceRef.current) return;
+    const MapmyIndia = (window as any).MapmyIndia;
     
     if (ambulanceMarkersRef.current[amb.id]) {
       ambulanceMarkersRef.current[amb.id].remove();
     }
 
-    const marker = mapplsClassRef.current.Marker({
+    const marker = new MapmyIndia.Marker({
       map: mapInstanceRef.current,
-      position: { lat: amb.current_lat, lng: amb.current_lng },
-      icon_url: getAmbulanceSvg(amb.status)
+      position: [amb.current_lat, amb.current_lng],
+      icon: getAmbulanceSvg(amb.status)
     });
 
     const info = `<div>
@@ -112,30 +114,24 @@ export default function AdminMap() {
       <p>Driver ID: ${amb.driver_id}</p>
     </div>`;
 
-    const infoWindow = mapplsClassRef.current.InfoWindow({
-      map: mapInstanceRef.current,
-      content: info,
-      position: { lat: amb.current_lat, lng: amb.current_lng }
-    });
-
-    marker.addListener('click', () => {
-      infoWindow.open(mapInstanceRef.current, marker);
-    });
+    // Wait for the marker to be clicked to show the info
+    marker.bindPopup(info);
 
     ambulanceMarkersRef.current[amb.id] = marker;
   };
 
   const createCallMarker = (call: IncidentCall) => {
-    if (!mapInstanceRef.current || !mapplsClassRef.current) return;
+    if (!mapInstanceRef.current) return;
+    const MapmyIndia = (window as any).MapmyIndia;
 
     if (callMarkersRef.current[call.id]) {
       callMarkersRef.current[call.id].remove();
     }
 
-    const marker = mapplsClassRef.current.Marker({
+    const marker = new MapmyIndia.Marker({
       map: mapInstanceRef.current,
-      position: { lat: call.pickup_lat, lng: call.pickup_lng },
-      icon_url: getCallSvg()
+      position: [call.pickup_lat, call.pickup_lng],
+      icon: getCallSvg()
     });
 
     const info = `<div>
@@ -145,20 +141,13 @@ export default function AdminMap() {
       <p>Status: ${call.status}</p>
     </div>`;
 
-    const infoWindow = mapplsClassRef.current.InfoWindow({
-      map: mapInstanceRef.current,
-      content: info,
-      position: { lat: call.pickup_lat, lng: call.pickup_lng }
-    });
-
-    marker.addListener('click', () => {
-      infoWindow.open(mapInstanceRef.current, marker);
-    });
+    marker.bindPopup(info);
 
     callMarkersRef.current[call.id] = marker;
   };
 
   const initSocket = () => {
+    if (socketRef.current) return;
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const socket = io(apiUrl);
     socketRef.current = socket;
@@ -210,6 +199,7 @@ export default function AdminMap() {
   const toggleHeatmap = async () => {
     const newVal = !heatmapMode;
     setHeatmapMode(newVal);
+    const MapmyIndia = (window as any).MapmyIndia;
 
     if (newVal) {
       Object.values(ambulanceMarkersRef.current).forEach(m => m.remove());
@@ -224,18 +214,18 @@ export default function AdminMap() {
           weight: 1
         }));
 
-        const pluginObject = new mappls_plugin();
-        heatmapLayerRef.current = pluginObject.HeatmapLayer({
-          map: mapInstanceRef.current,
-          data: heatData,
-          radius: 20
-        });
+        if (MapmyIndia.HeatmapLayer) {
+           heatmapLayerRef.current = new MapmyIndia.HeatmapLayer({
+             map: mapInstanceRef.current,
+             data: heatData,
+             radius: 20
+           });
+        }
       } catch (err) {
         console.error(err);
       }
     } else {
       if (heatmapLayerRef.current) {
-        // Mappls heatmaps don't always have a clear remove/hide method documented, so we re-render or attempt to clear.
         try {
           heatmapLayerRef.current.clear();
         } catch(e) {}
@@ -249,6 +239,7 @@ export default function AdminMap() {
   const togglePreposition = async () => {
     const newVal = !prepositionMode;
     setPrepositionMode(newVal);
+    const MapmyIndia = (window as any).MapmyIndia;
 
     if (newVal) {
       try {
@@ -256,9 +247,9 @@ export default function AdminMap() {
         const res = await axios.get(`${apiUrl}/api/analytics/preposition-zones`);
         
         prepositionOverlaysRef.current = res.data.map((zone: any) => {
-          return mapplsClassRef.current.Circle({
+          return new MapmyIndia.Circle({
             map: mapInstanceRef.current,
-            center: { lat: zone.lat, lng: zone.lng },
+            center: [zone.lat, zone.lng],
             radius: 5000,
             fillColor: '#3b82f6',
             fillOpacity: 0.4,
@@ -340,3 +331,4 @@ export default function AdminMap() {
     </div>
   );
 }
+
