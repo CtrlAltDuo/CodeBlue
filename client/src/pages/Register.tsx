@@ -60,18 +60,7 @@ export default function Register() {
               placeholder="Min 6 characters"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select 
-              value={role} 
-              onChange={e => setRole(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-            >
-              <option value="citizen">Citizen</option>
-              <option value="driver">Ambulance Driver</option>
-              <option value="hospital_staff">Hospital Staff</option>
-            </select>
-          </div>
+
           <button 
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-sm"
@@ -81,6 +70,9 @@ export default function Register() {
         </form>
         <p className="mt-6 text-center text-gray-600">
           Already have an account? <Link to="/login" className="text-blue-600 font-medium hover:underline">Sign In</Link>
+        </p>
+        <p className="mt-2 text-center text-gray-600">
+          Are you a hospital? <Link to="/hospital-onboarding" className="text-blue-600 font-medium hover:underline">Register your hospital</Link>
         </p>
       </div>
     </div>

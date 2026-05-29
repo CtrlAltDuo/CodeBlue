@@ -8,6 +8,7 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   role user_role NOT NULL,
+  hospital_id UUID REFERENCES hospitals(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -18,7 +19,17 @@ CREATE TABLE hospitals (
   lat DOUBLE PRECISION NOT NULL,
   lng DOUBLE PRECISION NOT NULL,
   contact_phone VARCHAR(50) NOT NULL,
+  total_beds INTEGER DEFAULT 0,
+  available_beds INTEGER DEFAULT 0,
+  total_icus INTEGER DEFAULT 0,
+  available_icus INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE driver_details (
+  user_id UUID PRIMARY KEY REFERENCES users(id),
+  shift VARCHAR(50),
+  id_proof_number VARCHAR(100)
 );
 
 CREATE TABLE ambulances (

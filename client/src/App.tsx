@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import HospitalOnboarding from './pages/HospitalOnboarding';
 import HospitalDashboard from './pages/HospitalDashboard';
 import DriverApp from './pages/DriverApp';
 import CitizenApp from './pages/CitizenApp';
@@ -47,6 +48,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/hospital-onboarding" element={<HospitalOnboarding />} />
               <Route path="/citizen" element={<CitizenApp />} />
               
               <Route path="/admin-map" element={

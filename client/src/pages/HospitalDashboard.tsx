@@ -21,11 +21,19 @@ export default function HospitalDashboard() {
   const socket = useSocket();
   const [ambulances, setAmbulances] = useState<Ambulance[]>([]);
   const [calls, setCalls] = useState<CallAssignment[]>([]);
+  const [hospitalInfo, setHospitalInfo] = useState<any>(null);
+  const [beds, setBeds] = useState(0);
+  const [icus, setIcus] = useState(0);
 
   useEffect(() => {
     if (user?.hospital_id) {
       api.get(`/ambulances?hospital_id=${user.hospital_id}`).then(res => {
         setAmbulances(res.data);
+      });
+      api.get(`/hospitals/${user.hospital_id}`).then(res => {
+        setHospitalInfo(res.data);
+        setBeds(res.data.available_beds);
+        setIcus(res.data.available_icus);
       });
     }
   }, [user]);
@@ -53,6 +61,17 @@ export default function HospitalDashboard() {
     }
   };
 
+  const updateInventory = async () => {
+    if (!user?.hospital_id) return;
+    try {
+      await api.patch(`/hospitals/${user.hospital_id}/inventory`, { available_beds: beds, available_icus: icus });
+      alert('Inventory updated successfully');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update inventory');
+    }
+  };
+
   const statusConfig = {
     available: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', label: 'Available' },
     en_route: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'En Route' },
@@ -73,7 +92,7 @@ export default function HospitalDashboard() {
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Hospital Command Center</h1>
             <p className="text-slate-500 mt-1 font-medium">Real-time overview of fleet operations and incoming emergencies.</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm text-center">
               <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Fleet</div>
               <div className="text-2xl font-black text-blue-600">{activeAmbulancesCount}</div>
@@ -81,6 +100,17 @@ export default function HospitalDashboard() {
             <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm text-center">
               <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Available</div>
               <div className="text-2xl font-black text-emerald-600">{availableAmbulancesCount}</div>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-sm flex items-center gap-4">
+              <div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avail. Beds</div>
+                <input type="number" className="w-20 text-center text-lg font-bold border-b" value={beds} onChange={e => setBeds(parseInt(e.target.value) || 0)} />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avail. ICUs</div>
+                <input type="number" className="w-20 text-center text-lg font-bold border-b" value={icus} onChange={e => setIcus(parseInt(e.target.value) || 0)} />
+              </div>
+              <button onClick={updateInventory} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700">Save</button>
             </div>
           </div>
         </div>

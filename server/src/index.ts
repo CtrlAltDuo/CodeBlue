@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import callsRoutes from './routes/calls';
 import ambulancesRoutes from './routes/ambulances';
 import analyticsRoutes from './routes/analytics';
+import hospitalsRoutes from './routes/hospitals';
 import { initSocket } from './socket';
 import { pool } from './db/pool';
 
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/calls', callsRoutes);
 app.use('/api/ambulances', ambulancesRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/hospitals', hospitalsRoutes);
 
 app.get('/health', async (req, res) => {
   let db_connected = false;

@@ -23,6 +23,60 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+router.post('/register-hospital', async (req: Request, res: Response): Promise<void> => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { 
+      adminName, adminEmail, adminPassword, 
+      hospitalName, hospitalAddress, hospitalPhone, lat, lng, 
+      totalBeds, totalICUs, fleet 
+    } = req.body;
+
+    const hospitalResult = await client.query(
+      `INSERT INTO hospitals (name, address, lat, lng, contact_phone, total_beds, available_beds, total_icus, available_icus)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+      [hospitalName, hospitalAddress, lat, lng, hospitalPhone, totalBeds, totalBeds, totalICUs, totalICUs]
+    );
+    const hospitalId = hospitalResult.rows[0].id;
+
+    const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+    const adminResult = await client.query(
+      'INSERT INTO users (name, email, password_hash, role, hospital_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [adminName, adminEmail, adminPasswordHash, 'hospital_staff', hospitalId]
+    );
+
+    if (fleet && Array.isArray(fleet)) {
+      for (const vehicle of fleet) {
+        const driverPasswordHash = await bcrypt.hash(vehicle.driverPassword, 10);
+        const driverResult = await client.query(
+          'INSERT INTO users (name, email, password_hash, role, hospital_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+          [vehicle.driverName, vehicle.driverEmail, driverPasswordHash, 'driver', hospitalId]
+        );
+        const driverId = driverResult.rows[0].id;
+
+        await client.query(
+          'INSERT INTO driver_details (user_id, shift, id_proof_number) VALUES ($1, $2, $3)',
+          [driverId, vehicle.shift, vehicle.idProofNumber]
+        );
+
+        await client.query(
+          'INSERT INTO ambulances (hospital_id, driver_id, license_plate, current_lat, current_lng) VALUES ($1, $2, $3, $4, $5)',
+          [hospitalId, driverId, vehicle.numberPlate, lat, lng]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json({ message: 'Hospital registered successfully' });
+  } catch (error: any) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -35,7 +89,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role, hospital_id: user.hospital_id },
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
@@ -46,7 +100,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        hospital_id: user.hospital_id
       }
     });
   } catch (error) {
@@ -61,7 +116,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response): Pr
       return;
     }
     const result = await pool.query(
-      'SELECT id, name, email, role, created_at FROM users WHERE id = $1',
+      'SELECT id, name, email, role, hospital_id, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
     if (result.rows.length === 0) {

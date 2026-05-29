@@ -30,6 +30,15 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+const hospitalIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 const ambulanceIcon = new L.DivIcon({
   className: 'custom-div-icon',
   html: `<div style="background-color: #ef4444; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M19 8h-2V6c0-1.1-.9-2-2-2H9C7.9 4 7 4.9 7 6v2H5c-1.1 0-2 .9-2 2v8h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zM7 6h10v5H7V6z"/></svg></div>`,
@@ -97,8 +106,18 @@ export default function CitizenApp() {
   const [ambulanceLoc, setAmbulanceLoc] = useState<{lat: number, lng: number} | null>(null);
   const [eta, setEta] = useState<number | null>(null);
   const [status, setStatus] = useState<'Ambulance assigned' | 'Driver en route' | 'Arrived'>('Ambulance assigned');
+  const [nearbyHospitals, setNearbyHospitals] = useState<any[]>([]);
   
   const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    if (location && !callId) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      axios.get(`${apiUrl}/api/hospitals/nearby?lat=${location.lat}&lng=${location.lng}`)
+        .then(res => setNearbyHospitals(res.data))
+        .catch(err => console.error(err));
+    }
+  }, [location, callId]);
 
   const handleUseCurrentLocation = () => {
     setLocationLoading(true);
@@ -319,7 +338,39 @@ export default function CitizenApp() {
           />
           
           {!callId ? (
-            <LocationSelector location={location} setLocation={setLocation} setAddress={setAddress} />
+            <>
+              <LocationSelector location={location} setLocation={setLocation} setAddress={setAddress} />
+              {nearbyHospitals.map(h => (
+                <Marker key={h.id} position={[h.lat, h.lng]} icon={hospitalIcon}>
+                  <Popup>
+                    <div className="text-sm min-w-[200px]">
+                      <h3 className="font-bold text-lg mb-1 text-slate-800">{h.name}</h3>
+                      <p className="text-slate-600 mb-1 text-xs">{h.address}</p>
+                      <p className="font-medium text-blue-600 mb-2 text-xs">📞 {h.contact_phone}</p>
+                      <div className="grid grid-cols-2 gap-2 mb-2 text-center">
+                        <div className="bg-slate-100 p-1.5 rounded">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">Beds</div>
+                          <div className="font-bold text-slate-800">{h.available_beds}</div>
+                        </div>
+                        <div className="bg-slate-100 p-1.5 rounded">
+                          <div className="text-[10px] uppercase font-bold text-slate-500">ICUs</div>
+                          <div className="font-bold text-slate-800">{h.available_icus}</div>
+                        </div>
+                      </div>
+                      {h.eta ? (
+                        <div className="bg-emerald-100 border border-emerald-200 text-emerald-800 p-2 rounded text-center font-bold text-sm">
+                          🚑 Nearest Amb ETA: {h.eta} min
+                        </div>
+                      ) : (
+                        <div className="bg-rose-100 border border-rose-200 text-rose-800 p-2 rounded text-center font-bold text-xs">
+                          No ambulances available
+                        </div>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </>
           ) : (
             <>
               {location && <Marker position={[location.lat, location.lng]} icon={userIcon} />}
