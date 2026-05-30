@@ -108,6 +108,8 @@ export default function CitizenApp() {
   const [ambulanceLoc, setAmbulanceLoc] = useState<{lat: number, lng: number} | null>(null);
   const [eta, setEta] = useState<number | null>(null);
   const [status, setStatus] = useState<'Ambulance assigned' | 'Driver en route' | 'Arrived'>('Ambulance assigned');
+  const [assignedAt, setAssignedAt] = useState<number | null>(null);
+  const [reassignTimeLeft, setReassignTimeLeft] = useState<number>(120);
   const [nearbyHospitals, setNearbyHospitals] = useState<any[]>([]);
   
   const socketRef = useRef<Socket | null>(null);
@@ -119,6 +121,17 @@ export default function CitizenApp() {
         .catch(err => console.error(err));
     }
   }, [location, callId]);
+
+  useEffect(() => {
+    if (assignedAt && reassignTimeLeft > 0) {
+      const timer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - assignedAt) / 1000);
+        const left = Math.max(0, 120 - elapsed);
+        setReassignTimeLeft(left);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [assignedAt, reassignTimeLeft]);
 
   const handleUseCurrentLocation = () => {
     setLocationLoading(true);
@@ -187,6 +200,8 @@ export default function CitizenApp() {
           setEta(assignment.assignment?.pickup_eta_minutes);
           setAmbulancePlate(assignment.assignment?.license_plate || `Assigned ID: ${assignment.ambulanceId}`);
           setAssignmentData(assignment.assignment);
+          setAssignedAt(Date.now());
+          setReassignTimeLeft(120);
           initTracking(call.id, location.lat, location.lng);
         } else {
           setError('No ambulance available currently. Please try again.');
@@ -212,6 +227,8 @@ export default function CitizenApp() {
         setAssignmentData(assignment.assignment);
         setStatus('Ambulance assigned');
         setAmbulanceLoc(null);
+        setAssignedAt(Date.now());
+        setReassignTimeLeft(120);
       }
     } catch (err: any) {
       if (err.response?.data?.assignment) {
@@ -406,10 +423,10 @@ export default function CitizenApp() {
                 
                 <button 
                   onClick={handleReassign}
-                  disabled={loading}
+                  disabled={loading || reassignTimeLeft === 0}
                   className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-4 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 disabled:opacity-50"
                 >
-                  {loading ? 'Reassigning...' : 'Reassign Ambulance'}
+                  {loading ? 'Reassigning...' : reassignTimeLeft > 0 ? `Reassign Ambulance (${reassignTimeLeft}s)` : 'Reassign Unavailable'}
                 </button>
               </div>
               

@@ -78,6 +78,12 @@ router.post('/:id/reassign', async (req, res) => {
       return res.status(404).json({ error: 'No active assignment found to reassign.' });
     }
     
+    // Validate 2 minute window
+    const assignedAt = new Date(currAssignmentRows[0].assigned_at).getTime();
+    if (Date.now() - assignedAt > 120 * 1000) {
+      return res.status(400).json({ error: 'Reassignment window (2 minutes) has expired.' });
+    }
+
     const currentAmbulanceId = currAssignmentRows[0].ambulance_id;
     
     try {
