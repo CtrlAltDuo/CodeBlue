@@ -505,7 +505,7 @@ export default function CitizenApp() {
 
         {/* Floating map hint */}
         {!callId && (
-          <div className="absolute top-6 right-6 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg border border-gray-200 dark:border-slate-800 pointer-events-none transition-colors">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg border border-gray-200 dark:border-slate-800 pointer-events-none transition-colors whitespace-nowrap">
             <span className="font-medium text-gray-700 dark:text-gray-300">📍 Click anywhere on the map to drop a pin</span>
           </div>
         )}
