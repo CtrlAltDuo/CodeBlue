@@ -75,8 +75,44 @@ export default function Register() {
               value={password} 
               onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-colors"
-              placeholder="Min 6 characters"
+              placeholder="Min 8 characters"
             />
+            {password && (
+              <div className="mt-2 space-y-1">
+                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
+                  {[1, 2, 3, 4, 5].map((level) => {
+                    let strength = 0;
+                    if (password.length >= 8) strength++;
+                    if (/[a-z]/.test(password)) strength++;
+                    if (/[A-Z]/.test(password)) strength++;
+                    if (/\d/.test(password)) strength++;
+                    if (/[\W_]/.test(password)) strength++;
+                    
+                    let color = 'bg-transparent';
+                    if (strength >= level) {
+                      if (strength <= 2) color = 'bg-red-500';
+                      else if (strength === 3 || strength === 4) color = 'bg-yellow-500';
+                      else color = 'bg-emerald-500';
+                    }
+                    
+                    return <div key={level} className={`h-full flex-1 border-r border-white/20 last:border-r-0 transition-colors duration-300 ${color}`} />;
+                  })}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {(() => {
+                     let s = 0;
+                     if (password.length >= 8) s++;
+                     if (/[a-z]/.test(password)) s++;
+                     if (/[A-Z]/.test(password)) s++;
+                     if (/\d/.test(password)) s++;
+                     if (/[\W_]/.test(password)) s++;
+                     if (s <= 2) return 'Weak: Add uppercase, numbers, or symbols';
+                     if (s <= 4) return 'Good: Could be stronger';
+                     return 'Strong: Great password!';
+                  })()}
+                </p>
+              </div>
+            )}
           </div>
 
           <button 

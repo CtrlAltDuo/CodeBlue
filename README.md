@@ -21,7 +21,7 @@ Real-time ambulance dispatch and emergency response optimization platform with l
    ```
 
 3. **Database Setup**:
-   Ensure you have a PostgreSQL instance running. Execute the schema script located at `server/src/db/schema.sql` to initialize your database tables.
+   This project uses a centralized cloud PostgreSQL database (via Supabase). You do not need to run a local PostgreSQL instance.
 
 4. **Environment variables**:
    Create `.env` files in both `client` and `server` folders using the examples provided.
@@ -34,7 +34,7 @@ Real-time ambulance dispatch and emergency response optimization platform with l
 
    **`server/.env`**:
    ```env
-   DATABASE_URL=postgres://user:password@localhost:5432/codeblue
+   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-SUPABASE-PROJECT-ID].supabase.co:5432/postgres
    JWT_SECRET=your_jwt_secret
    MAPPLS_API_KEY=your_mappls_key_here
    PORT=5000
