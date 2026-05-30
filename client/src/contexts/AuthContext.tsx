@@ -15,33 +15,46 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+import api from '../api';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const checkAuth = async () => {
+      try {
+        const response = await api.get('/auth/me');
+        setUser(response.data);
+        setToken('cookie-auth'); // we don't need actual token on client anymore
+      } catch (error) {
+        setUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
+    checkAuth();
   }, []);
 
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {}
     setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading session...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout }}>

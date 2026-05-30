@@ -15,9 +15,12 @@ export default function Login() {
     setError('');
     try {
       const res = await api.post('/auth/login', { email, password });
-      login(res.data.token, res.data.user);
-      if (res.data.user.role === 'hospital_staff') navigate('/hospital');
-      else if (res.data.user.role === 'driver') navigate('/driver');
+      const { token, user } = res.data;
+      login(token, user); // localStorage is handled internally by cookies now, but we still update Context state
+
+      if (user.role === 'hospital_staff') navigate('/hospital');
+      else if (user.role === 'driver') navigate('/driver');
+      else if (user.role === 'admin') navigate('/admin-map');
       else navigate('/citizen');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed');

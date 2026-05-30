@@ -2,16 +2,6 @@ CREATE TYPE user_role AS ENUM ('admin', 'hospital_staff', 'driver', 'citizen');
 CREATE TYPE ambulance_status AS ENUM ('available', 'en_route', 'occupied', 'offline');
 CREATE TYPE call_status AS ENUM ('pending', 'assigned', 'in_progress', 'completed', 'cancelled');
 
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  role user_role NOT NULL,
-  hospital_id UUID REFERENCES hospitals(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE hospitals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
@@ -23,6 +13,16 @@ CREATE TABLE hospitals (
   available_beds INTEGER DEFAULT 0,
   total_icus INTEGER DEFAULT 0,
   available_icus INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role user_role NOT NULL,
+  hospital_id UUID REFERENCES hospitals(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
