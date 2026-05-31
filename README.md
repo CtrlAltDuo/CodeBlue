@@ -2,6 +2,28 @@
 
 Real-time ambulance dispatch and emergency response optimization platform with live tracking, ETA prediction, hospital fleet management, and intelligent nearest-unit assignment.
 
+## Screenshots
+
+<details>
+<summary><b>Click to view application screenshots</b></summary>
+<br/>
+
+### Citizen App (Mobile View)
+![Citizen App](images/citizen-app-mockup.png)
+
+### Dashboard Overview
+![Dashboard Overview](images/dashboard-mockup.png)
+
+### Hospital Staff Interface
+![Hospital Staff](images/hospital_staff_pc.png)
+
+### Superadmin Portal
+![Superadmin Portal](images/superadmin.png)
+
+### Analytics Dashboard
+![Analytics](images/analytics.png)
+</details>
+
 ## Tech Stack
 - **Client**: React, Vite, TypeScript, TailwindCSS, Mappls Web Maps, Recharts, Socket.io-client
 - **Server**: Node.js, Express, TypeScript, PostgreSQL, Socket.io
